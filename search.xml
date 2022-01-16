@@ -127,7 +127,7 @@
 <p>苹果使用配置文件来解决这个问题，也就是我们熟悉的类型是<code>mobileprovision</code>的文件，配置文件里面包含了很多信息，包括证书，可以使用的权限，可以安装的设备id等，所以把上面的图改一下就变成了：</p>
 <img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg" class="">  
 
-<p>所以，当我们进行真机调试的时候，证书并不是单独放在app文件夹中的，而是内嵌在配置文件中的，大家如果有兴趣可以看一下自己电脑上的配置文件，地址在<code>~/Library/MobileDevice/Provisioning Profiles</code></p>
+<p>所以，当我们进行真机调试的时候，证书并不是单独放在app文件夹中的，而是内嵌在配置文件中的，大家如果有兴趣可以看一下自己电脑上的配置文件，地址在<code>~/Library/MobileDevice/Provisioning Profiles</code>。</p>
 <p>现在我们就解决了前面提到的所有的问题，当然举真机调试只是一个例子，因为企业包也是使用这种机制的，而AppStore包的签名我们上面已经讲过了。</p>
 <p>这样我们就理清楚了iOS的签名机制了。</p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ol>
