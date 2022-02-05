@@ -283,6 +283,167 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="玄晖">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/" itemprop="url">iOS逆向(1)-越狱&&砸壳</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-29T16:44:11+08:00">
+                2022-01-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/xuanhui.github.io/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
+                    <span itemprop="name">逆向</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文记录了一些逆向过程中的知识点，属于比较入门的知识。更加详细的了解推荐阅读书籍<a target="_blank" rel="noopener" href="https://item.jd.com/12800426.html">《iOS应用逆向与安全之道》</a></p>
+<h3 id="越狱"><a href="#越狱" class="headerlink" title="越狱"></a>越狱</h3><h4 id="开始越狱"><a href="#开始越狱" class="headerlink" title="开始越狱"></a>开始越狱</h4><p>越狱是iOS逆向中非常基础的操作，因为未越狱的手机是没有系统的<code>root</code>权限的，所以有很多的限制，而越狱就是利用系统漏洞来获取设备Root权限的一种技术手段。越狱又分为完美越狱和非完美越狱：</p>
+<ul>
+<li>完美越狱是指指设备在重启后依然能保持越狱状态。</li>
+<li>非完美越狱是指重启后将失去越狱状态，需要重新进行越狱。</li>
+</ul>
+<p>因为苹果的保护越来越强，目前在iOS iOS 9.1以上的手机无法进行完美越狱。</p>
+<p>笔者越狱使用的手机是iPhone7, 系统是iOS 13.4,  使用的越狱工具是<code>checkra1n</code>，大家可以在<a target="_blank" rel="noopener" href="https://checkra.in/">https://checkra.in/</a> 这个网址下载工具进行越狱，具体的越狱步骤就不写了。</p>
+<h4 id="安装必备工具"><a href="#安装必备工具" class="headerlink" title="安装必备工具"></a>安装必备工具</h4><p>越狱之后我们需要在Cydia里面安装一些必要的工具,你可以把Cydia理解为越狱环境的app store,下面我列一下我安装的一些工具:</p>
+<ol>
+<li>Apple File Conduit”2”:  简称”AFC2”, 用于激活助手类工具对iOS设备所有路径的访问权限</li>
+<li> adv-cmds:  只有安装了这个命令,才能在手机上执行ps命令,  用于查看当前运行进程的PID. </li>
+<li> AppSync Unified: 用来绕过系统对应用的签名验证，可以随意安装和运行脱壳后的ipa.</li>
+<li>Filza File Manager: 用来浏览手机文件、修改文件的权限等.</li>
+<li>NewTerm 2: 一款能运行在手机上的终端工具，可以执行各种命令、下载文件、编辑文件等.</li>
+</ol>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/#more" rel="contents">
+              Read more &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -860,7 +1021,8 @@
       
         
           
-            
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上一篇我们介绍了</p>
+
           
         
       
@@ -1371,125 +1533,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/10/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="玄晖">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/xuanhui.github.io/2022/01/10/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8-1/" itemprop="url">音视频开发入门(1)</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-10T11:27:17+08:00">
-                2022-01-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1562,7 +1605,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/xuanhui.github.io/tags/index.html">
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>

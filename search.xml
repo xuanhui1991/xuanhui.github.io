@@ -37,11 +37,17 @@
     <content><![CDATA[]]></content>
   </entry>
   <entry>
-    <title>iOS逆向入门(1)</title>
-    <url>/xuanhui.github.io/2022/01/08/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/</url>
+    <title>iOS逆向(1)-越狱&amp;&amp;砸壳</title>
+    <url>/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/</url>
     <content><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文记录了一些逆向过程中的知识点，属于比较入门的知识。更加详细的了解推荐阅读书籍<a href="https://item.jd.com/12800426.html">《iOS应用逆向与安全之道》</a></p>
-<h3 id="越狱"><a href="#越狱" class="headerlink" title="越狱"></a>越狱</h3><p>逆向的第一步是越狱，我使用的手机是iPhone7, 系统是iOS 13.4,  使用的越狱工具是checkra1n，大家可以在<a href="https://checkra.in/">https://checkra.in/</a> 这个网址下载工具进行越狱，具体的越狱步骤就不写了。</p>
-<h3 id="安装必备工具"><a href="#安装必备工具" class="headerlink" title="安装必备工具"></a>安装必备工具</h3><p>越狱之后我们需要在Cydia里面安装一些必要的工具,你可以把Cydia理解为越狱环境的app store,下面我列一下我安装的一些工具:</p>
+<h3 id="越狱"><a href="#越狱" class="headerlink" title="越狱"></a>越狱</h3><h4 id="开始越狱"><a href="#开始越狱" class="headerlink" title="开始越狱"></a>开始越狱</h4><p>越狱是iOS逆向中非常基础的操作，因为未越狱的手机是没有系统的<code>root</code>权限的，所以有很多的限制，而越狱就是利用系统漏洞来获取设备Root权限的一种技术手段。越狱又分为完美越狱和非完美越狱：</p>
+<ul>
+<li>完美越狱是指指设备在重启后依然能保持越狱状态。</li>
+<li>非完美越狱是指重启后将失去越狱状态，需要重新进行越狱。</li>
+</ul>
+<p>因为苹果的保护越来越强，目前在iOS iOS 9.1以上的手机无法进行完美越狱。</p>
+<p>笔者越狱使用的手机是iPhone7, 系统是iOS 13.4,  使用的越狱工具是<code>checkra1n</code>，大家可以在<a href="https://checkra.in/">https://checkra.in/</a> 这个网址下载工具进行越狱，具体的越狱步骤就不写了。</p>
+<h4 id="安装必备工具"><a href="#安装必备工具" class="headerlink" title="安装必备工具"></a>安装必备工具</h4><p>越狱之后我们需要在Cydia里面安装一些必要的工具,你可以把Cydia理解为越狱环境的app store,下面我列一下我安装的一些工具:</p>
 <ol>
 <li>Apple File Conduit”2”:  简称”AFC2”, 用于激活助手类工具对iOS设备所有路径的访问权限</li>
 <li> adv-cmds:  只有安装了这个命令,才能在手机上执行ps命令,  用于查看当前运行进程的PID. </li>
@@ -51,16 +57,27 @@
 </ol>
 <span id="more"></span> 
 
-<h3 id="连接越狱手机"><a href="#连接越狱手机" class="headerlink" title="连接越狱手机"></a>连接越狱手机</h3><p>越狱手机的连接可以通过wifi和usb进行连接，使用wifi连接的话可能会比较卡，所以我们这里使用usb进行连接。</p>
+<h4 id="连接越狱手机"><a href="#连接越狱手机" class="headerlink" title="连接越狱手机"></a>连接越狱手机</h4><p>越狱手机的连接可以通过wifi和usb进行连接，使用wifi连接的话可能会比较卡，所以我们这里使用usb进行连接。</p>
 <p>通过usb连接手机的步骤如下：</p>
-<p>安装usbmuxd: </p>
-<img src="/xuanhui.github.io/2022/01/08/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/image1.png" class="">
+<ol>
+<li><p>安装usbmuxd，命令行中输入: <code>brew install usbmuxd</code></p>
+</li>
+<li><p>安装完之后就可以进行端口映射了，ssh的默认端口22,所以需要把本机的2222端口映射到手机的22端口,使用命令：<code>iproxy 2222 22</code></p>
+</li>
+<li><p>进行端口映射后,就可以连接到设备了:<code>ssh -p 2222 root@127.0.0.1</code>,默认密码是<code>alpine</code></p>
+</li>
+</ol>
+<p>这样我们就可以在电脑上面通过命令行对越狱手机进行操作了。</p>
+<h3 id="加壳和砸壳"><a href="#加壳和砸壳" class="headerlink" title="加壳和砸壳"></a>加壳和砸壳</h3><h4 id="AppStore加密机制"><a href="#AppStore加密机制" class="headerlink" title="AppStore加密机制"></a><code>AppStore</code>加密机制</h4><p>当我们把<code>ipa</code>包上传到苹果服务器后，苹果会对<code>ipa</code>包进行加密处理，称为加壳（其实只会对<code>MachO</code>的<code>Text</code>段进行加密，不会对其他数据加密），所以我们从<code>AppStore</code>下载的包都是加过壳的。</p>
+<p>有两种方式可以判断我们拿到的<code>ipa</code>包有没有加过壳：</p>
+<ol>
+<li> 通过<code>otool</code>命令进行验证，输入命令:<code>otool -l (machO文件路径) | grep crypt</code>,假如输出的字段中<code>cryptid = 0</code>，就代表是没有加过壳的。</li>
+<li>通过<code>MachOView</code>打开<code>MachO</code>文件，假如在<code>Load Commands</code>下的<code>LC_ENCRYPTION_INFO_64</code>内容中<code>Crypt ID</code>为0，就代表是未加过壳的。</li>
+</ol>
+<img src="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/crypt.png" class=""> 
 
-<p>安装完之后就可以进行端口映射了，ssh的默认端口22,所以需要把本机的2222端口映射到手机的22端口</p>
-<img src="/xuanhui.github.io/2022/01/08/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/image2.png" class="">
-
-<p>进行端口映射后,就可以连接到设备了</p>
-]]></content>
+<p>因为加过壳的应用中<code>Text</code>段的内容并非它的原始内容，所以就会有很多的限制，比如反汇编。所以，我们就需要把这一层加密给去除，这个过程叫做砸壳。</p>
+<h4 id="砸壳"><a href="#砸壳" class="headerlink" title="砸壳"></a>砸壳</h4>]]></content>
       <categories>
         <category>逆向</category>
       </categories>
@@ -123,6 +140,7 @@
 <li>设备接收到app包后，先用公钥B验证证书的签名。</li>
 <li>上一步签名验证没有问题的话,就从证书中取出公钥A，对app的数字签名进行验证。</li>
 </ol>
+<p>因为这个过程中，不仅仅对App进行了签名，也对Mac电脑的公钥进行了签名（即开发者证书），所以我们把它叫做双重签名。</p>
 <h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p>那么上面的签名机制是否完全解决了所有的问题，答案是否定的： 比如我们的真机调试app只能安装在某一些固定的设备上面，那么单靠上面的机制是无法解决的。</p>
 <p>苹果使用配置文件来解决这个问题，也就是我们熟悉的类型是<code>mobileprovision</code>的文件，配置文件里面包含了很多信息，包括证书，可以使用的权限，可以安装的设备id等，所以把上面的图改一下就变成了：</p>
 <img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg" class="">  
@@ -149,7 +167,11 @@
   <entry>
     <title>iOS逆向-代码注入&amp;&amp;重签名</title>
     <url>/xuanhui.github.io/2022/01/10/ios%E9%80%86%E5%90%91-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5-%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上一篇我们介绍了</p>
+]]></content>
+      <tags>
+        <tag>代码注入</tag>
+      </tags>
   </entry>
   <entry>
     <title>KVO原理分析</title>
