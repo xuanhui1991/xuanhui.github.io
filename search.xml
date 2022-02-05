@@ -2,22 +2,22 @@
 <search>
   <entry>
     <title>AFNetworking源码分析(1)</title>
-    <url>/xuanhui.github.io/2022/01/10/afnetworking%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-1/</url>
+    <url>/2022/01/10/afnetworking%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-1/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>Block底层分析</title>
-    <url>/xuanhui.github.io/2022/01/10/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/</url>
+    <url>/2022/01/10/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>Flutter引擎源码调试</title>
-    <url>/xuanhui.github.io/2022/01/10/flutter%E5%BC%95%E6%93%8E%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95/</url>
+    <url>/2022/01/10/flutter%E5%BC%95%E6%93%8E%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>Flutter渲染原理</title>
-    <url>/xuanhui.github.io/2022/01/10/flutter%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/</url>
+    <url>/2022/01/10/flutter%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[]]></content>
       <categories>
         <category>Flutter</category>
@@ -28,17 +28,17 @@
   </entry>
   <entry>
     <title>GCD深入探究</title>
-    <url>/xuanhui.github.io/2022/01/09/gcd%E6%B7%B1%E5%85%A5%E6%8E%A2%E7%A9%B6/</url>
+    <url>/2022/01/09/gcd%E6%B7%B1%E5%85%A5%E6%8E%A2%E7%A9%B6/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>HTTPS原理</title>
-    <url>/xuanhui.github.io/2022/01/10/https%E5%8E%9F%E7%90%86/</url>
+    <url>/2022/01/10/https%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>iOS逆向(1)-越狱&amp;&amp;砸壳</title>
-    <url>/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/</url>
+    <url>/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/</url>
     <content><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文记录了一些逆向过程中的知识点，属于比较入门的知识。更加详细的了解推荐阅读书籍<a href="https://item.jd.com/12800426.html">《iOS应用逆向与安全之道》</a></p>
 <h3 id="越狱"><a href="#越狱" class="headerlink" title="越狱"></a>越狱</h3><h4 id="开始越狱"><a href="#开始越狱" class="headerlink" title="开始越狱"></a>开始越狱</h4><p>越狱是iOS逆向中非常基础的操作，因为未越狱的手机是没有系统的<code>root</code>权限的，所以有很多的限制，而越狱就是利用系统漏洞来获取设备Root权限的一种技术手段。越狱又分为完美越狱和非完美越狱：</p>
 <ul>
@@ -77,7 +77,24 @@
 <img src="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/crypt.png" class=""> 
 
 <p>因为加过壳的应用中<code>Text</code>段的内容并非它的原始内容，所以就会有很多的限制，比如反汇编。所以，我们就需要把这一层加密给去除，这个过程叫做砸壳。</p>
-<h4 id="砸壳"><a href="#砸壳" class="headerlink" title="砸壳"></a>砸壳</h4>]]></content>
+<h4 id="砸壳"><a href="#砸壳" class="headerlink" title="砸壳"></a>砸壳</h4><p>砸壳的类型分为静态砸壳和动态砸壳：</p>
+<ul>
+<li>静态砸壳：在已经掌握和了解到了壳应用的加密算法和逻辑后，在不运行壳应用程序的前提下，将壳应用程序进行解密处理。静态脱壳的方法难度大，而且加密方发现应用被破解后，就可能会改用更加高级和复杂的加密技术。</li>
+<li>动态砸壳：从运行在进程内存空间中的可执行程序映像（image）入手，将内存中的内容进行转储（dump）处理来实现脱壳处理。这种方法实现起来相对简单，且不必关心使用的是何种加密技术。</li>
+</ul>
+<p>动态砸壳的方法也有很多，常见的工具有：</p>
+<ul>
+<li><code>Clutch</code></li>
+<li><code>dumpdecrypted</code></li>
+<li><code>bfinject</code></li>
+<li><code>CrackerXI</code></li>
+<li><code>Frida-ios-dump</code></li>
+</ul>
+<p>下面我们通过使用<code>Frida-ios-dump</code>来演示动态砸壳，其他的砸壳方式也是大同小异：</p>
+<ul>
+<li>首先我们需要在电脑上面下载<code>frida-ios-dump</code></li>
+</ul>
+]]></content>
       <categories>
         <category>逆向</category>
       </categories>
@@ -87,7 +104,7 @@
   </entry>
   <entry>
     <title>iOS图像渲染原理</title>
-    <url>/xuanhui.github.io/2022/01/10/ios%E5%9B%BE%E5%83%8F%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/</url>
+    <url>/2022/01/10/ios%E5%9B%BE%E5%83%8F%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[]]></content>
       <categories>
         <category>iOS底层</category>
@@ -98,7 +115,7 @@
   </entry>
   <entry>
     <title>iOS应用签名原理</title>
-    <url>/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/</url>
+    <url>/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在iOS开发中,开发者证书一定是我们经常使用到的，那么为什么会存在开发者证书这样的机制，开发者证书机制和应用签名到底有什么关系，应用签名又是什么，本文会逐步讲解这里面的原理。</p>
 <h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>数字签名是电子邮件、宏或电子文档等数字信息上的一种经过加密的电子身份验证戳。 签名用于确认宏或文档来自签名人且未经更改。</p>
 <p>我们用一个图来表示：</p>
@@ -161,12 +178,12 @@
   </entry>
   <entry>
     <title>iOS离屏渲染探究</title>
-    <url>/xuanhui.github.io/2022/01/10/ios%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E6%8E%A2%E7%A9%B6/</url>
+    <url>/2022/01/10/ios%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E6%8E%A2%E7%A9%B6/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>iOS逆向-代码注入&amp;&amp;重签名</title>
-    <url>/xuanhui.github.io/2022/01/10/ios%E9%80%86%E5%90%91-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5-%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
+    <url>/2022/01/10/ios%E9%80%86%E5%90%91-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5-%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上一篇我们介绍了</p>
 ]]></content>
       <tags>
@@ -175,27 +192,27 @@
   </entry>
   <entry>
     <title>KVO原理分析</title>
-    <url>/xuanhui.github.io/2022/01/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</url>
+    <url>/2022/01/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>Runtime分析-消息转发机制</title>
-    <url>/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E6%B6%88%E6%81%AF%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6/</url>
+    <url>/2022/01/10/runtime%E5%88%86%E6%9E%90-%E6%B6%88%E6%81%AF%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>Runtime分析-类和对象的原理</title>
-    <url>/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%8E%9F%E7%90%86/</url>
+    <url>/2022/01/10/runtime%E5%88%86%E6%9E%90-%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>锁的原理</title>
-    <url>/xuanhui.github.io/2022/01/10/%E9%94%81%E7%9A%84%E5%8E%9F%E7%90%86/</url>
+    <url>/2022/01/10/%E9%94%81%E7%9A%84%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>音视频开发入门(1)</title>
-    <url>/xuanhui.github.io/2022/01/10/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8-1/</url>
+    <url>/2022/01/10/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8-1/</url>
     <content><![CDATA[]]></content>
   </entry>
 </search>

@@ -40,7 +40,7 @@
 
   
   
-  <link href="/xuanhui.github.io/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
 
 
 
@@ -48,21 +48,21 @@
 
 
 
-<link href="/xuanhui.github.io/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
 
-<link href="/xuanhui.github.io/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/xuanhui.github.io/images/apple-touch-icon-next.png?v=5.1.4">
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
 
 
-  <link rel="icon" type="image/png" sizes="32x32" href="/xuanhui.github.io/images/favicon-32x32-next.png?v=5.1.4">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
 
 
-  <link rel="icon" type="image/png" sizes="16x16" href="/xuanhui.github.io/images/favicon-16x16-next.png?v=5.1.4">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
 
 
-  <link rel="mask-icon" href="/xuanhui.github.io/images/logo.svg?v=5.1.4" color="#222">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
 
 
 
@@ -82,20 +82,20 @@
 <meta name="description" content="前言在iOS开发中,开发者证书一定是我们经常使用到的，那么为什么会存在开发者证书这样的机制，开发者证书机制和应用签名到底有什么关系，应用签名又是什么，本文会逐步讲解这里面的原理。 数字签名数字签名是电子邮件、宏或电子文档等数字信息上的一种经过加密的电子身份验证戳。 签名用于确认宏或文档来自签名人且未经更改。 我们用一个图来表示：">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iOS应用签名原理">
-<meta property="og:url" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:url" content="https://xuanhui1991.com/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/index.html">
 <meta property="og:site_name" content="玄晖">
 <meta property="og:description" content="前言在iOS开发中,开发者证书一定是我们经常使用到的，那么为什么会存在开发者证书这样的机制，开发者证书机制和应用签名到底有什么关系，应用签名又是什么，本文会逐步讲解这里面的原理。 数字签名数字签名是电子邮件、宏或电子文档等数字信息上的一种经过加密的电子身份验证戳。 签名用于确认宏或文档来自签名人且未经更改。 我们用一个图来表示：">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg">
-<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/AppStore%E7%AD%BE%E5%90%8D.png">
-<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png">
-<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg">
+<meta property="og:image" content="https://xuanhui1991.com/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg">
+<meta property="og:image" content="https://xuanhui1991.com/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/AppStore%E7%AD%BE%E5%90%8D.png">
+<meta property="og:image" content="https://xuanhui1991.com/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png">
+<meta property="og:image" content="https://xuanhui1991.com/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg">
 <meta property="article:published_time" content="2022-01-13T02:55:11.000Z">
 <meta property="article:modified_time" content="2022-01-16T11:51:41.124Z">
 <meta property="article:author" content="xuanhui1991">
 <meta property="article:tag" content="签名">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg">
+<meta name="twitter:image" content="https://xuanhui1991.com/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg">
 
 
 
@@ -125,7 +125,7 @@
 
 
 
-  <link rel="canonical" href="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/13/ios应用签名原理/"/>
+  <link rel="canonical" href="https://xuanhui1991.com/2022/01/13/ios应用签名原理/"/>
 
 
 
@@ -159,7 +159,7 @@
     
 
     <div class="custom-logo-site-title">
-      <a href="/xuanhui.github.io/"  class="brand" rel="start">
+      <a href="/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">玄晖</span>
         <span class="logo-line-after"><i></i></span>
@@ -187,7 +187,7 @@
       
         
         <li class="menu-item menu-item-home">
-          <a href="/xuanhui.github.io/" rel="section">
+          <a href="/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
@@ -197,7 +197,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/xuanhui.github.io/tags" rel="section">
+          <a href="/tags" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
@@ -207,7 +207,7 @@
       
         
         <li class="menu-item menu-item-categories">
-          <a href="/xuanhui.github.io/categories" rel="section">
+          <a href="/categories" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
@@ -217,7 +217,7 @@
       
         
         <li class="menu-item menu-item-about">
-          <a href="/xuanhui.github.io/about" rel="section">
+          <a href="/about" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
@@ -292,12 +292,12 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.com/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -344,7 +344,7 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/xuanhui.github.io/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
+                  <a href="/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
                     <span itemprop="name">逆向</span>
                   </a>
                 </span>
@@ -450,7 +450,7 @@
       
         <div class="post-tags">
           
-            <a href="/xuanhui.github.io/tags/%E7%AD%BE%E5%90%8D/" rel="tag"># 签名</a>
+            <a href="/tags/%E7%AD%BE%E5%90%8D/" rel="tag"># 签名</a>
           
         </div>
       
@@ -463,7 +463,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/xuanhui.github.io/2022/01/10/https%E5%8E%9F%E7%90%86/" rel="next" title="HTTPS原理">
+              <a href="/2022/01/10/https%E5%8E%9F%E7%90%86/" rel="next" title="HTTPS原理">
                 <i class="fa fa-chevron-left"></i> HTTPS原理
               </a>
             
@@ -473,7 +473,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/" rel="prev" title="iOS逆向(1)-越狱&&砸壳">
+              <a href="/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/" rel="prev" title="iOS逆向(1)-越狱&&砸壳">
                 iOS逆向(1)-越狱&&砸壳 <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -550,7 +550,7 @@
             
               <div class="site-state-item site-state-posts">
               
-                <a href="/xuanhui.github.io/archives">
+                <a href="/archives">
               
                   <span class="site-state-item-count">16</span>
                   <span class="site-state-item-name">posts</span>
@@ -562,7 +562,7 @@
               
               
               <div class="site-state-item site-state-categories">
-                <a href="/xuanhui.github.io/categories/index.html">
+                <a href="/categories/index.html">
                   <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
@@ -573,7 +573,7 @@
               
               
               <div class="site-state-item site-state-tags">
-                <a href="/xuanhui.github.io/tags/index.html">
+                <a href="/tags/index.html">
                   <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
@@ -700,64 +700,64 @@
 
   
   
-    <script type="text/javascript" src="/xuanhui.github.io/lib/jquery/index.js?v=2.1.3"></script>
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
   
 
   
   
-    <script type="text/javascript" src="/xuanhui.github.io/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
   
 
   
   
-    <script type="text/javascript" src="/xuanhui.github.io/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
   
 
   
   
-    <script type="text/javascript" src="/xuanhui.github.io/lib/velocity/velocity.min.js?v=1.2.1"></script>
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
   
 
   
   
-    <script type="text/javascript" src="/xuanhui.github.io/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
   
 
   
   
-    <script type="text/javascript" src="/xuanhui.github.io/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
   
-
-
-  
-
-
-  <script type="text/javascript" src="/xuanhui.github.io/js/src/utils.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/xuanhui.github.io/js/src/motion.js?v=5.1.4"></script>
-
-
-
-  
-  
-
-
-  <script type="text/javascript" src="/xuanhui.github.io/js/src/affix.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/xuanhui.github.io/js/src/schemes/pisces.js?v=5.1.4"></script>
-
-
-
-  
-  <script type="text/javascript" src="/xuanhui.github.io/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/xuanhui.github.io/js/src/post-details.js?v=5.1.4"></script>
-
 
 
   
 
 
-  <script type="text/javascript" src="/xuanhui.github.io/js/src/bootstrap.js?v=5.1.4"></script>
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
 
 
 
@@ -807,7 +807,7 @@
     } else if (/json$/i.test(search_path)) {
       isXml = false;
     }
-    var path = "/xuanhui.github.io/" + search_path;
+    var path = "/" + search_path;
     // monitor main search box;
 
     var onPopupClose = function (e) {
