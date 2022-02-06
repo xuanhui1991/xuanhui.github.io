@@ -384,7 +384,7 @@
         <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在iOS开发中,开发者证书一定是我们经常使用到的，那么为什么会存在开发者证书这样的机制，开发者证书机制和应用签名到底有什么关系，应用签名又是什么，本文会逐步讲解这里面的原理。</p>
 <h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>数字签名是电子邮件、宏或电子文档等数字信息上的一种经过加密的电子身份验证戳。 签名用于确认宏或文档来自签名人且未经更改。</p>
 <p>我们用一个图来表示：</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg" class="">  
+<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg" class>  
 
 <span id="more"></span> 
 
@@ -400,7 +400,7 @@
 </ol>
 <h3 id="AppStore应用签名"><a href="#AppStore应用签名" class="headerlink" title="AppStore应用签名"></a>AppStore应用签名</h3><p>我们来看一下AppStore的应用是如何签名的：</p>
 <p>苹果会生成一对<code>RSA</code>加密的公私钥，私钥放在AppStore的服务器上，公钥内置在苹果设备上面，当我们把应用上传到苹果服务器的时候，苹果使用私钥对App进行签名，当用户下载了app的时候会使用内置的公钥进行解密获得<code>hash</code>值，然后将machO或者资源文件重新进行<code>hash</code>比较两个值是否相同来验证应用是否被篡改。</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/AppStore%E7%AD%BE%E5%90%8D.png" class="">  
+<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/AppStore%E7%AD%BE%E5%90%8D.png" class>  
 
 <p>使用这样一对苹果的公/私钥的好处除了可以完成数字签名必要的加/解密之外，还可以确保这个应用一定是经过苹果官方允许的。</p>
 <p>那么这样是否就可以满足所有需求了，答案是否定的.因为假如都是这样的签名方式，那么用户就只能安装AppStore的应用了，那么我们又如何进行真机调试或者企业级应用分发呢。</p>
@@ -412,7 +412,7 @@
 </ol>
 <p>类似于<code>HTTPS</code>的证书，苹果也使用了证书来解决这些问题，也就是我们熟知的开发者证书。</p>
 <p>用一张图来表述：</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png" class="">  
+<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png" class>  
 
 <p>我们了解一下这个流程：</p>
 <ol>
@@ -425,7 +425,7 @@
 <p>因为这个过程中，不仅仅对App进行了签名，也对Mac电脑的公钥进行了签名（即开发者证书），所以我们把它叫做双重签名。</p>
 <h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p>那么上面的签名机制是否完全解决了所有的问题，答案是否定的： 比如我们的真机调试app只能安装在某一些固定的设备上面，那么单靠上面的机制是无法解决的。</p>
 <p>苹果使用配置文件来解决这个问题，也就是我们熟悉的类型是<code>mobileprovision</code>的文件，配置文件里面包含了很多信息，包括证书，可以使用的权限，可以安装的设备id等，所以把上面的图改一下就变成了：</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg" class="">  
+<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg" class>  
 
 <p>所以，当我们进行真机调试的时候，证书并不是单独放在app文件夹中的，而是内嵌在配置文件中的，大家如果有兴趣可以看一下自己电脑上的配置文件，地址在<code>~/Library/MobileDevice/Provisioning Profiles</code>。</p>
 <p>现在我们就解决了前面提到的所有的问题，当然举真机调试只是一个例子，因为企业包也是使用这种机制的，而AppStore包的签名我们上面已经讲过了。</p>
