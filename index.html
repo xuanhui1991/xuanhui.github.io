@@ -593,6 +593,136 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="玄晖">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/" itemprop="url">探索fishhook原理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-12T14:38:27+08:00">
+                2022-01-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><ul>
+<li>fishhook是Facebook开源的用于hook C函数的一个开源代码, 在github上的地址是<a target="_blank" rel="noopener" href="https://github.com/">https://github.com/</a>* facebook/fishhook. </li>
+<li>探索fishhook的原理有很多方式,本文是通过分析汇编和MachO的方式来探索fishhook做了什么可以hook C方法. </li>
+</ul>
+<h3 id="fishhook的使用"><a href="#fishhook的使用" class="headerlink" title="fishhook的使用"></a>fishhook的使用</h3><p>我们拿最简单的NSLog方法来举例:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">    </span><br><span class="line">    struct rebinding nslog;</span><br><span class="line">    nslog.name = &quot;NSLog&quot;;</span><br><span class="line">    nslog.replacement = myNSLog;</span><br><span class="line">    nslog.replaced = (void *)&amp;origin_nslog;</span><br><span class="line">    struct rebinding rebs[1] = &#123;nslog&#125;;</span><br><span class="line">    rebind_symbols(rebs, 1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void myNSLog(NSString * format,...)&#123;</span><br><span class="line">    format = [format stringByAppendingString:@&quot;被hook了 \n&quot;];</span><br><span class="line">    //调用原始的</span><br><span class="line">    origin_nslog(format);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;NSLog&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>上面的代码就可以hook系统的<code>NSLog</code>方法.<br>下面我们通过实验的方式一步步探索原理, 想要研究<code>NSLog</code>方法为什么可以被hook,就需要先研究<code>NSLog</code>是如何进行符号绑定的.</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/#more" rel="contents">
+              Read more &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/10/https%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1414,125 +1544,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/10/flutter%E5%BC%95%E6%93%8E%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="玄晖">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/xuanhui.github.io/2022/01/10/flutter%E5%BC%95%E6%93%8E%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95/" itemprop="url">Flutter引擎源码调试</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-10T11:31:41+08:00">
-                2022-01-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1583,7 +1594,7 @@
               
                 <a href="/xuanhui.github.io/archives">
               
-                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1605,7 +1616,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/xuanhui.github.io/tags/index.html">
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>

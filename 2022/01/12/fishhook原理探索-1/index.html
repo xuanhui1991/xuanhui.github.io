@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/xuanhui.github.io/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/xuanhui.github.io/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/xuanhui.github.io/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/xuanhui.github.io/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/xuanhui.github.io/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/xuanhui.github.io/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/xuanhui.github.io/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="动态链接," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言 fishhook是Facebook开源的用于hook C函数的一个开源代码, 在github上的地址是https:&#x2F;&#x2F;github.com&#x2F;* facebook&#x2F;fishhook.  探索fishhook的原理有很多方式,本文是通过分析汇编和MachO的方式来探索fishhook做了什么可以hook C方法.   fishhook的使用我们拿最简单的NSLog方法来举例: 123456789">
+<meta property="og:type" content="article">
+<meta property="og:title" content="探索fishhook原理">
+<meta property="og:url" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/index.html">
+<meta property="og:site_name" content="玄晖">
+<meta property="og:description" content="前言 fishhook是Facebook开源的用于hook C函数的一个开源代码, 在github上的地址是https:&#x2F;&#x2F;github.com&#x2F;* facebook&#x2F;fishhook.  探索fishhook的原理有很多方式,本文是通过分析汇编和MachO的方式来探索fishhook做了什么可以hook C方法.   fishhook的使用我们拿最简单的NSLog方法来举例: 123456789">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18840636091805885.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7304802789773075.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_8171600946787017.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_4496406473048762.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_1177547250922164.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_39509557866998324.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_6516347181413293.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7477757960731293.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_29020524307303375.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9608326840497308.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9707768506979488.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_08481973156313871.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7234028181891523.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9650566185043585.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_16442714511614342.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7320012412949934.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_39509557866998324.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_22492891421293404.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7477757960731293.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9936940138534995.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_02777089198063276.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_08479784382773392.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_20550310306975272.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18892638196928968.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_5825779781884246.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18840636091805885.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9650566185043585.png">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_02777089198063276.png">
+<meta property="article:published_time" content="2022-01-12T06:38:27.000Z">
+<meta property="article:modified_time" content="2022-01-13T10:40:26.849Z">
+<meta property="article:author" content="xuanhui1991">
+<meta property="article:tag" content="动态链接">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18840636091805885.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://xuanhui1991.github.io/xuanhui.github.io/2022/01/12/fishhook原理探索-1/"/>
+
+
+
+
+
+  <title>探索fishhook原理 | 玄晖</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/xuanhui.github.io/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">玄晖</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/xuanhui.github.io/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/xuanhui.github.io/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/xuanhui.github.io/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/xuanhui.github.io/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            Search
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="玄晖">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">探索fishhook原理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-12T14:38:27+08:00">
+                2022-01-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><ul>
+<li>fishhook是Facebook开源的用于hook C函数的一个开源代码, 在github上的地址是<a target="_blank" rel="noopener" href="https://github.com/">https://github.com/</a>* facebook/fishhook. </li>
+<li>探索fishhook的原理有很多方式,本文是通过分析汇编和MachO的方式来探索fishhook做了什么可以hook C方法. </li>
+</ul>
+<h3 id="fishhook的使用"><a href="#fishhook的使用" class="headerlink" title="fishhook的使用"></a>fishhook的使用</h3><p>我们拿最简单的NSLog方法来举例:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">    </span><br><span class="line">    struct rebinding nslog;</span><br><span class="line">    nslog.name = &quot;NSLog&quot;;</span><br><span class="line">    nslog.replacement = myNSLog;</span><br><span class="line">    nslog.replaced = (void *)&amp;origin_nslog;</span><br><span class="line">    struct rebinding rebs[1] = &#123;nslog&#125;;</span><br><span class="line">    rebind_symbols(rebs, 1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void myNSLog(NSString * format,...)&#123;</span><br><span class="line">    format = [format stringByAppendingString:@&quot;被hook了 \n&quot;];</span><br><span class="line">    //调用原始的</span><br><span class="line">    origin_nslog(format);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;NSLog&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>上面的代码就可以hook系统的<code>NSLog</code>方法.<br>下面我们通过实验的方式一步步探索原理, 想要研究<code>NSLog</code>方法为什么可以被hook,就需要先研究<code>NSLog</code>是如何进行符号绑定的.</p>
+<span id="more"></span> 
+
+<h3 id="实验准备"><a href="#实验准备" class="headerlink" title="实验准备"></a>实验准备</h3><h4 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h4><ul>
+<li>因为X86的和arm64的指令集不相同,我们后面需要分析一些汇编代码,所以我们把这次探索的条件限定在使用arm64 cpu的真机上</li>
+<li>因为需要设置断点的时候阅读汇编代码,需要打开Xcode-&gt; Debug -&gt; Debugworkflow -&gt; Always show Disassembly</li>
+</ul>
+<h4 id="一些概念的介绍"><a href="#一些概念的介绍" class="headerlink" title="一些概念的介绍"></a>一些概念的介绍</h4><h5 id="静态链接和动态链接"><a href="#静态链接和动态链接" class="headerlink" title="静态链接和动态链接"></a>静态链接和动态链接</h5><ul>
+<li>静态链接: 在编译的过程当中, 会将每一个源文件编译成目标文件(.o文件), 同一个组件的.o文件汇集在一起形成.a文件, 所有的.a文件进行静态链接继而形成app的主MachO, 所以在app编译的最终产物中, .a文件是不会单独存在的,它的内容已经在app的MachO文件中了.</li>
+<li>动态链接: 除了.a文件,我们还有.framework文件, .framework文件又分为系统的framework和自己实现的framework, 系统的framework属于共享缓存库, 意味着多个app可以共同使用一个framework, 苹果不允许我们自己的framework进行共享. 只要是framework格式的库, 链接的时候都是在app启动的过程中进行的, 我们称为动态链接. </li>
+<li>今天的内容不涉及静态链接, 主要是动态链接的符号绑定,动态链接的符号绑定分为两种, 一种是懒加载的,一种是非懒加载的,懒加载的符号意味着只有在第一次调用的时候才会进行绑定.</li>
+<li>关于链接这一部分,推荐阅读 <a target="_blank" rel="noopener" href="https://item.jd.com/10067200.html">&lt;&lt;程序员的自我修养–链接、装载与库&gt;&gt;</a>.</li>
+</ul>
+<h5 id="ASLR"><a href="#ASLR" class="headerlink" title="ASLR"></a>ASLR</h5><ul>
+<li>ASLR是地址空间随机化技术,  是一种针对缓冲区溢出的安全保护技术。通过每一次加载程序的进程地址随机化的方式,防止攻击者能可靠地跳转到内存的特定位置来利用函数. 对于我们来说, 需要注意的点就是machO相同的代码在每一次运行的时候所在的绝对地址是不固定的.</li>
+</ul>
+<h5 id="小端模式"><a href="#小端模式" class="headerlink" title="小端模式"></a>小端模式</h5><ul>
+<li>是指数据的高字节位保存在内存的高地址中，而数据的低字节位保存在内存的低地址中。</li>
+</ul>
+<h3 id="探索懒加载符号绑定"><a href="#探索懒加载符号绑定" class="headerlink" title="探索懒加载符号绑定"></a>探索懒加载符号绑定</h3><h4 id="懒加载符号绑定过程"><a href="#懒加载符号绑定过程" class="headerlink" title="懒加载符号绑定过程"></a>懒加载符号绑定过程</h4><img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18840636091805885.png" class>  
+
+<ul>
+<li>调用<code>NSLog</code>方法会先跳转到<code>__stubs</code>段相应的代码</li>
+<li><code>__stubs</code>代码的执行: 从<code>__la_symbol_ptr</code>段对应的位置取出地址, 跳转到<code>__stub_helper</code>段</li>
+<li>执行<code>__stub_helper</code>代码跳转到<code>dyld</code>进行符号绑定</li>
+</ul>
+<h4 id="汇编代码"><a href="#汇编代码" class="headerlink" title="汇编代码"></a>汇编代码</h4><p>从<code>NSLog</code>调用到跳转到<code>__stubs</code>执行</p>
+<p>我们调用一下<code>NSLog</code>方法,并在执行的位置打一个断点 :</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7304802789773075.png" class>
+
+<p> 接下来,就可以运行程序了,断点会跳到对应的汇编代码:</p>
+ <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_8171600946787017.png" class>
+<ul>
+<li>在<code>arm64</code>指令集中,<code>bl</code>指令是跳转指令,所以这句代码的含义是跳转到<code>0x1003ba3a4</code>  这个地址. </li>
+<li>我们想要知道<code>0x1003ba3a4</code>这个地址是在哪个段, 但是目前只有一个绝对地址,而MachOView展示的都是偏移,所以还需要知道这个MachO加载到内存中的起始位置.可以通过LLDB的命令<code>image list</code>进行打印.</li>
+</ul>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_4496406473048762.png" class>
+
+<p>标红的地方就是fishhookDemo这个镜像在内存中的起始位置. 每运行一次app,这个地址都是不同的. 把上面的地址再减去这个基地址,就可以获取到偏移.</p>
+<p> <code>0x1003ba3a4  -   0x00000001003b4000 =   0x63A4</code></p>
+<p> 那么我们就打开MachOView来看看这个地址的内容是啥:</p>
+ <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_1177547250922164.png" class>
+<p> 这样我们验证了第一步是跳转到<code>__stubs</code>执行</p>
+<h4 id="stubs跳转到dyld进行符号绑定"><a href="#stubs跳转到dyld进行符号绑定" class="headerlink" title="__stubs跳转到dyld进行符号绑定"></a><code>__stubs</code>跳转到<code>dyld</code>进行符号绑定</h4><p>我们先来看看这个<code>__stubs</code>段对应的汇编代码是怎么样的,在原来断点的位置,我们按住<code>control + step into</code>,进入到这个地址的汇编代码:</p>
+  <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_39509557866998324.png" class>
+
+<p>  这段汇编就是  <code>0x1003ba3a4</code>这个地址的代码, 我们来分析一下</p>
+<ul>
+<li><code>nop</code>是空指令,意为无操作</li>
+<li><code>ldr</code>指令是把对应的值放入到寄存器中, 截图中的命令的含义是将当前<code>pc</code>寄存器的值加上<code>0x5c58</code>计算出一个内存地址,然后将这个内存地址存放的数据读取到<code>x16</code>寄存器, 其实值就是分号后面数据,Xcode已经把注释加上了,等下我们来验证一下</li>
+<li><code>br</code>指令是跳转指令,跳转到某一个寄存器存储的地址. 在这里就是跳转到<code>x16</code>寄存器存储的地址.</li>
+</ul>
+<p>现在我们来验证一下ldr那条指令的注释是不是正确的:</p>
+<p>在控制台中输入<code>LLDB</code>的命令读取寄存器内容:</p>
+  <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_6516347181413293.png" class>
+<p>  <code>0x00000001003ba3a8  + 0x5c58  = 0x1003C0000</code></p>
+<p>  然后我们用 <code>x </code>命令读取这个内存的内容:</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7477757960731293.png" class>
+<p>   iOS是小端模式,所以读取出来的值应该是<code>0x00000001003ba4e8</code>,  和上面那段注释是相同的.</p>
+<p>我们从MachOView来验证这个地址存放的数据,同样的用物理地址减去ASLR基地址:</p>
+<p><code>0x1003C0000 - 0x00000001003b4000 = 0xC000</code></p>
+<p>最后定位到MachO的位置如下图:<br> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_29020524307303375.png" class></p>
+<p> 现在<code>x16</code>寄存器里面存的值是<code>0x00000001003ba4e8</code>,  同样我们通过相对地址来看看它位于machO的哪一段:</p>
+<p><code>0x00000001003ba4e8 -  0x00000001003b4000 = 0x64E8</code><br> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9608326840497308.png" class></p>
+<p> 我们发现这个地址是位于text段的<code>_stub_helper</code>这一节, 然后我们跳到这个内存地址看看里面是啥:<br>  <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9707768506979488.png" class><br>  这段代码我们大概分析一下, 直接看<code>b</code>指令, 这是一条跳转指令,代表着会跳转到 <code>0x1003ba4d0</code>, 我们直接看0<code>x1003ba4d0</code>存放了什么指令<br>   <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_08481973156313871.png" class></p>
+<p>   红框里面我们可以看到最终会跳转到<code>0x0000000187d88c70</code>这个地址,我们看这个地址的汇编代码:<br>    <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7234028181891523.png" class><br>    已经跳转到<code>dyld</code>的 <code>dyld_stub_binder</code>方法了, 这其实就是<code>dyld</code>进行符号绑定的地方,  这样我们就验证了图中的那个流程了. </p>
+<h3 id="符号绑定后的调用变化"><a href="#符号绑定后的调用变化" class="headerlink" title="符号绑定后的调用变化"></a>符号绑定后的调用变化</h3><h4 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h4> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9650566185043585.png" class>
+<ul>
+<li>通过对比上一张流程图我们可以发现<code>__stubs</code>执行后马上跳转到<code>NSLog</code>方法的地址进行执行,而跳转地址是由<code>__la_symbol_ptr</code>这个Data段提供的地址,  所以我们可以想到第一次符号绑定后<code>__la_symbol_ptr</code>对应的数据已经改变了,下面验证这个流程</li>
+</ul>
+<h4 id="汇编代码-1"><a href="#汇编代码-1" class="headerlink" title="汇编代码"></a>汇编代码</h4><ul>
+<li>我们在第二次执行NSLog方法的地方打一个断点,同样去看汇编<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_16442714511614342.png" class>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7320012412949934.png" class>
+我把符号绑定前的截图再贴一下:<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_39509557866998324.png" class></li>
+</ul>
+<p> 有没有发现:<br>命令是全部一样的,但是对应地址的内容变了,我们来验证一下上面那个地址对应的代码是什么.</p>
+ <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_22492891421293404.png" class>
+<p>很明显,这个地址对应的代码就是<code>Foundation</code>框架里面的<code>NSLog</code>地址, 所以上面的代码就是直接跳转到NSlog方法执行了,没有再进行符号绑定了.</p>
+<p>但是有一个问题: 从第一次绑定的时候我们可以看出来, 跳转的地址是由<code>0x1003C0000</code>这个地址的内容提供的,而在第一次调用<code>NSLog</code>方法的时候,这个地址的内容是<br> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7477757960731293.png" class></p>
+<p> 那么我们重新来看这个地址的内容:<br> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9936940138534995.png" class></p>
+<p> 不一样了, 读取一下就是 <code>0x01894eb3c4</code>, 就和上面的注释对应上了, 所以我们可以看到经过第一次符号绑定之后, <code>0x1003C0000</code>这个地方已经存放了真正<code>NSLog</code>方法的地址,就可以直接跳转了.</p>
+<h3 id="fishhook改了什么"><a href="#fishhook改了什么" class="headerlink" title="fishhook改了什么"></a>fishhook改了什么</h3><h4 id="流程-1"><a href="#流程-1" class="headerlink" title="流程"></a>流程</h4><img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_02777089198063276.png" class>
+
+<h4 id="汇编代码-2"><a href="#汇编代码-2" class="headerlink" title="汇编代码"></a>汇编代码</h4><ul>
+<li>我们执行一下<code>fishhook</code>的代码,然后在<code>NSLog</code>调用的地方打一个断点:<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_08479784382773392.png" class></li>
+</ul>
+<p>经过前面的基础,我们可以比较轻松的来验证这个流程:</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_20550310306975272.png" class>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18892638196928968.png" class>
+
+<p>同样的fishhook也改了<code>0x1003C0000</code>这个地址的内容,新的内容是<code>0x01003b95d0</code>,我们来看下这个地址的汇编:</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_5825779781884246.png" class>
+
+<p>我们再把前面的三张流程图汇总一下:</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18840636091805885.png" class title="绑定NSLog方法">
+
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9650566185043585.png" class title="绑定完第一次调用NSLog方法">
+
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_02777089198063276.png" class title="fishhook执行完调用NSLog方法">
+
+
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/xuanhui.github.io/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="tag"># 动态链接</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/xuanhui.github.io/2022/01/10/https%E5%8E%9F%E7%90%86/" rel="next" title="HTTPS原理">
+                <i class="fa fa-chevron-left"></i> HTTPS原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/" rel="prev" title="iOS应用签名原理">
+                iOS应用签名原理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/xuanhui.github.io/archives">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/xuanhui.github.io/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/xuanhui.github.io/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fishhook%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">fishhook的使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%87%86%E5%A4%87"><span class="nav-number">3.</span> <span class="nav-text">实验准备</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83"><span class="nav-number">3.1.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E6%A6%82%E5%BF%B5%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="nav-number">3.2.</span> <span class="nav-text">一些概念的介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5%E5%92%8C%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5"><span class="nav-number">3.2.1.</span> <span class="nav-text">静态链接和动态链接</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ASLR"><span class="nav-number">3.2.2.</span> <span class="nav-text">ASLR</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B0%8F%E7%AB%AF%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.2.3.</span> <span class="nav-text">小端模式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A2%E7%B4%A2%E6%87%92%E5%8A%A0%E8%BD%BD%E7%AC%A6%E5%8F%B7%E7%BB%91%E5%AE%9A"><span class="nav-number">4.</span> <span class="nav-text">探索懒加载符号绑定</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%87%92%E5%8A%A0%E8%BD%BD%E7%AC%A6%E5%8F%B7%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B"><span class="nav-number">4.1.</span> <span class="nav-text">懒加载符号绑定过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B1%87%E7%BC%96%E4%BB%A3%E7%A0%81"><span class="nav-number">4.2.</span> <span class="nav-text">汇编代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#stubs%E8%B7%B3%E8%BD%AC%E5%88%B0dyld%E8%BF%9B%E8%A1%8C%E7%AC%A6%E5%8F%B7%E7%BB%91%E5%AE%9A"><span class="nav-number">4.3.</span> <span class="nav-text">__stubs跳转到dyld进行符号绑定</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E7%BB%91%E5%AE%9A%E5%90%8E%E7%9A%84%E8%B0%83%E7%94%A8%E5%8F%98%E5%8C%96"><span class="nav-number">5.</span> <span class="nav-text">符号绑定后的调用变化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B"><span class="nav-number">5.1.</span> <span class="nav-text">流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B1%87%E7%BC%96%E4%BB%A3%E7%A0%81-1"><span class="nav-number">5.2.</span> <span class="nav-text">汇编代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fishhook%E6%94%B9%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">6.</span> <span class="nav-text">fishhook改了什么</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B-1"><span class="nav-number">6.1.</span> <span class="nav-text">流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B1%87%E7%BC%96%E4%BB%A3%E7%A0%81-2"><span class="nav-number">6.2.</span> <span class="nav-text">汇编代码</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xuanhui1991</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/xuanhui.github.io/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/xuanhui.github.io/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/xuanhui.github.io/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/xuanhui.github.io/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/xuanhui.github.io/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/xuanhui.github.io/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/xuanhui.github.io/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/xuanhui.github.io/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/xuanhui.github.io/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/xuanhui.github.io/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/xuanhui.github.io/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/xuanhui.github.io/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/xuanhui.github.io/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/xuanhui.github.io/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

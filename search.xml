@@ -74,8 +74,7 @@
 <li> 通过<code>otool</code>命令进行验证，输入命令:<code>otool -l (machO文件路径) | grep crypt</code>,假如输出的字段中<code>cryptid = 0</code>，就代表是没有加过壳的。</li>
 <li>通过<code>MachOView</code>打开<code>MachO</code>文件，假如在<code>Load Commands</code>下的<code>LC_ENCRYPTION_INFO_64</code>内容中<code>Crypt ID</code>为0，就代表是未加过壳的。</li>
 </ol>
-<img src="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png" class> 
-<img src="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png" class> 
+<img src="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/crypt.png" class> 
 
 <p>因为加过壳的应用中<code>Text</code>段的内容并非它的原始内容，所以就会有很多的限制，比如反汇编。所以，我们就需要把这一层加密给去除，这个过程叫做砸壳。</p>
 <h4 id="砸壳"><a href="#砸壳" class="headerlink" title="砸壳"></a>砸壳</h4><p>砸壳的类型分为静态砸壳和动态砸壳：</p>
@@ -218,5 +217,121 @@
     <title>音视频开发入门(1)</title>
     <url>/xuanhui.github.io/2022/01/10/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8-1/</url>
     <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>探索fishhook原理</title>
+    <url>/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/</url>
+    <content><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><ul>
+<li>fishhook是Facebook开源的用于hook C函数的一个开源代码, 在github上的地址是<a href="https://github.com/">https://github.com/</a>* facebook/fishhook. </li>
+<li>探索fishhook的原理有很多方式,本文是通过分析汇编和MachO的方式来探索fishhook做了什么可以hook C方法. </li>
+</ul>
+<h3 id="fishhook的使用"><a href="#fishhook的使用" class="headerlink" title="fishhook的使用"></a>fishhook的使用</h3><p>我们拿最简单的NSLog方法来举例:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">    </span><br><span class="line">    struct rebinding nslog;</span><br><span class="line">    nslog.name = &quot;NSLog&quot;;</span><br><span class="line">    nslog.replacement = myNSLog;</span><br><span class="line">    nslog.replaced = (void *)&amp;origin_nslog;</span><br><span class="line">    struct rebinding rebs[1] = &#123;nslog&#125;;</span><br><span class="line">    rebind_symbols(rebs, 1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void myNSLog(NSString * format,...)&#123;</span><br><span class="line">    format = [format stringByAppendingString:@&quot;被hook了 \n&quot;];</span><br><span class="line">    //调用原始的</span><br><span class="line">    origin_nslog(format);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;NSLog&quot;);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>上面的代码就可以hook系统的<code>NSLog</code>方法.<br>下面我们通过实验的方式一步步探索原理, 想要研究<code>NSLog</code>方法为什么可以被hook,就需要先研究<code>NSLog</code>是如何进行符号绑定的.</p>
+<span id="more"></span> 
+
+<h3 id="实验准备"><a href="#实验准备" class="headerlink" title="实验准备"></a>实验准备</h3><h4 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h4><ul>
+<li>因为X86的和arm64的指令集不相同,我们后面需要分析一些汇编代码,所以我们把这次探索的条件限定在使用arm64 cpu的真机上</li>
+<li>因为需要设置断点的时候阅读汇编代码,需要打开Xcode-&gt; Debug -&gt; Debugworkflow -&gt; Always show Disassembly</li>
+</ul>
+<h4 id="一些概念的介绍"><a href="#一些概念的介绍" class="headerlink" title="一些概念的介绍"></a>一些概念的介绍</h4><h5 id="静态链接和动态链接"><a href="#静态链接和动态链接" class="headerlink" title="静态链接和动态链接"></a>静态链接和动态链接</h5><ul>
+<li>静态链接: 在编译的过程当中, 会将每一个源文件编译成目标文件(.o文件), 同一个组件的.o文件汇集在一起形成.a文件, 所有的.a文件进行静态链接继而形成app的主MachO, 所以在app编译的最终产物中, .a文件是不会单独存在的,它的内容已经在app的MachO文件中了.</li>
+<li>动态链接: 除了.a文件,我们还有.framework文件, .framework文件又分为系统的framework和自己实现的framework, 系统的framework属于共享缓存库, 意味着多个app可以共同使用一个framework, 苹果不允许我们自己的framework进行共享. 只要是framework格式的库, 链接的时候都是在app启动的过程中进行的, 我们称为动态链接. </li>
+<li>今天的内容不涉及静态链接, 主要是动态链接的符号绑定,动态链接的符号绑定分为两种, 一种是懒加载的,一种是非懒加载的,懒加载的符号意味着只有在第一次调用的时候才会进行绑定.</li>
+<li>关于链接这一部分,推荐阅读 <a href="https://item.jd.com/10067200.html">&lt;&lt;程序员的自我修养–链接、装载与库&gt;&gt;</a>.</li>
+</ul>
+<h5 id="ASLR"><a href="#ASLR" class="headerlink" title="ASLR"></a>ASLR</h5><ul>
+<li>ASLR是地址空间随机化技术,  是一种针对缓冲区溢出的安全保护技术。通过每一次加载程序的进程地址随机化的方式,防止攻击者能可靠地跳转到内存的特定位置来利用函数. 对于我们来说, 需要注意的点就是machO相同的代码在每一次运行的时候所在的绝对地址是不固定的.</li>
+</ul>
+<h5 id="小端模式"><a href="#小端模式" class="headerlink" title="小端模式"></a>小端模式</h5><ul>
+<li>是指数据的高字节位保存在内存的高地址中，而数据的低字节位保存在内存的低地址中。</li>
+</ul>
+<h3 id="探索懒加载符号绑定"><a href="#探索懒加载符号绑定" class="headerlink" title="探索懒加载符号绑定"></a>探索懒加载符号绑定</h3><h4 id="懒加载符号绑定过程"><a href="#懒加载符号绑定过程" class="headerlink" title="懒加载符号绑定过程"></a>懒加载符号绑定过程</h4><img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18840636091805885.png" class>  
+
+<ul>
+<li>调用<code>NSLog</code>方法会先跳转到<code>__stubs</code>段相应的代码</li>
+<li><code>__stubs</code>代码的执行: 从<code>__la_symbol_ptr</code>段对应的位置取出地址, 跳转到<code>__stub_helper</code>段</li>
+<li>执行<code>__stub_helper</code>代码跳转到<code>dyld</code>进行符号绑定</li>
+</ul>
+<h4 id="汇编代码"><a href="#汇编代码" class="headerlink" title="汇编代码"></a>汇编代码</h4><p>从<code>NSLog</code>调用到跳转到<code>__stubs</code>执行</p>
+<p>我们调用一下<code>NSLog</code>方法,并在执行的位置打一个断点 :</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7304802789773075.png" class>
+
+<p> 接下来,就可以运行程序了,断点会跳到对应的汇编代码:</p>
+ <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_8171600946787017.png" class>
+<ul>
+<li>在<code>arm64</code>指令集中,<code>bl</code>指令是跳转指令,所以这句代码的含义是跳转到<code>0x1003ba3a4</code>  这个地址. </li>
+<li>我们想要知道<code>0x1003ba3a4</code>这个地址是在哪个段, 但是目前只有一个绝对地址,而MachOView展示的都是偏移,所以还需要知道这个MachO加载到内存中的起始位置.可以通过LLDB的命令<code>image list</code>进行打印.</li>
+</ul>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_4496406473048762.png" class>
+
+<p>标红的地方就是fishhookDemo这个镜像在内存中的起始位置. 每运行一次app,这个地址都是不同的. 把上面的地址再减去这个基地址,就可以获取到偏移.</p>
+<p> <code>0x1003ba3a4  -   0x00000001003b4000 =   0x63A4</code></p>
+<p> 那么我们就打开MachOView来看看这个地址的内容是啥:</p>
+ <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_1177547250922164.png" class>
+<p> 这样我们验证了第一步是跳转到<code>__stubs</code>执行</p>
+<h4 id="stubs跳转到dyld进行符号绑定"><a href="#stubs跳转到dyld进行符号绑定" class="headerlink" title="__stubs跳转到dyld进行符号绑定"></a><code>__stubs</code>跳转到<code>dyld</code>进行符号绑定</h4><p>我们先来看看这个<code>__stubs</code>段对应的汇编代码是怎么样的,在原来断点的位置,我们按住<code>control + step into</code>,进入到这个地址的汇编代码:</p>
+  <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_39509557866998324.png" class>
+
+<p>  这段汇编就是  <code>0x1003ba3a4</code>这个地址的代码, 我们来分析一下</p>
+<ul>
+<li><code>nop</code>是空指令,意为无操作</li>
+<li><code>ldr</code>指令是把对应的值放入到寄存器中, 截图中的命令的含义是将当前<code>pc</code>寄存器的值加上<code>0x5c58</code>计算出一个内存地址,然后将这个内存地址存放的数据读取到<code>x16</code>寄存器, 其实值就是分号后面数据,Xcode已经把注释加上了,等下我们来验证一下</li>
+<li><code>br</code>指令是跳转指令,跳转到某一个寄存器存储的地址. 在这里就是跳转到<code>x16</code>寄存器存储的地址.</li>
+</ul>
+<p>现在我们来验证一下ldr那条指令的注释是不是正确的:</p>
+<p>在控制台中输入<code>LLDB</code>的命令读取寄存器内容:</p>
+  <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_6516347181413293.png" class>
+<p>  <code>0x00000001003ba3a8  + 0x5c58  = 0x1003C0000</code></p>
+<p>  然后我们用 <code>x </code>命令读取这个内存的内容:</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7477757960731293.png" class>
+<p>   iOS是小端模式,所以读取出来的值应该是<code>0x00000001003ba4e8</code>,  和上面那段注释是相同的.</p>
+<p>我们从MachOView来验证这个地址存放的数据,同样的用物理地址减去ASLR基地址:</p>
+<p><code>0x1003C0000 - 0x00000001003b4000 = 0xC000</code></p>
+<p>最后定位到MachO的位置如下图:<br> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_29020524307303375.png" class></p>
+<p> 现在<code>x16</code>寄存器里面存的值是<code>0x00000001003ba4e8</code>,  同样我们通过相对地址来看看它位于machO的哪一段:</p>
+<p><code>0x00000001003ba4e8 -  0x00000001003b4000 = 0x64E8</code><br> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9608326840497308.png" class></p>
+<p> 我们发现这个地址是位于text段的<code>_stub_helper</code>这一节, 然后我们跳到这个内存地址看看里面是啥:<br>  <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9707768506979488.png" class><br>  这段代码我们大概分析一下, 直接看<code>b</code>指令, 这是一条跳转指令,代表着会跳转到 <code>0x1003ba4d0</code>, 我们直接看0<code>x1003ba4d0</code>存放了什么指令<br>   <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_08481973156313871.png" class></p>
+<p>   红框里面我们可以看到最终会跳转到<code>0x0000000187d88c70</code>这个地址,我们看这个地址的汇编代码:<br>    <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7234028181891523.png" class><br>    已经跳转到<code>dyld</code>的 <code>dyld_stub_binder</code>方法了, 这其实就是<code>dyld</code>进行符号绑定的地方,  这样我们就验证了图中的那个流程了. </p>
+<h3 id="符号绑定后的调用变化"><a href="#符号绑定后的调用变化" class="headerlink" title="符号绑定后的调用变化"></a>符号绑定后的调用变化</h3><h4 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h4> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9650566185043585.png" class>
+<ul>
+<li>通过对比上一张流程图我们可以发现<code>__stubs</code>执行后马上跳转到<code>NSLog</code>方法的地址进行执行,而跳转地址是由<code>__la_symbol_ptr</code>这个Data段提供的地址,  所以我们可以想到第一次符号绑定后<code>__la_symbol_ptr</code>对应的数据已经改变了,下面验证这个流程</li>
+</ul>
+<h4 id="汇编代码-1"><a href="#汇编代码-1" class="headerlink" title="汇编代码"></a>汇编代码</h4><ul>
+<li>我们在第二次执行NSLog方法的地方打一个断点,同样去看汇编<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_16442714511614342.png" class>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7320012412949934.png" class>
+我把符号绑定前的截图再贴一下:<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_39509557866998324.png" class></li>
+</ul>
+<p> 有没有发现:<br>命令是全部一样的,但是对应地址的内容变了,我们来验证一下上面那个地址对应的代码是什么.</p>
+ <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_22492891421293404.png" class>
+<p>很明显,这个地址对应的代码就是<code>Foundation</code>框架里面的<code>NSLog</code>地址, 所以上面的代码就是直接跳转到NSlog方法执行了,没有再进行符号绑定了.</p>
+<p>但是有一个问题: 从第一次绑定的时候我们可以看出来, 跳转的地址是由<code>0x1003C0000</code>这个地址的内容提供的,而在第一次调用<code>NSLog</code>方法的时候,这个地址的内容是<br> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_7477757960731293.png" class></p>
+<p> 那么我们重新来看这个地址的内容:<br> <img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9936940138534995.png" class></p>
+<p> 不一样了, 读取一下就是 <code>0x01894eb3c4</code>, 就和上面的注释对应上了, 所以我们可以看到经过第一次符号绑定之后, <code>0x1003C0000</code>这个地方已经存放了真正<code>NSLog</code>方法的地址,就可以直接跳转了.</p>
+<h3 id="fishhook改了什么"><a href="#fishhook改了什么" class="headerlink" title="fishhook改了什么"></a>fishhook改了什么</h3><h4 id="流程-1"><a href="#流程-1" class="headerlink" title="流程"></a>流程</h4><img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_02777089198063276.png" class>
+
+<h4 id="汇编代码-2"><a href="#汇编代码-2" class="headerlink" title="汇编代码"></a>汇编代码</h4><ul>
+<li>我们执行一下<code>fishhook</code>的代码,然后在<code>NSLog</code>调用的地方打一个断点:<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_08479784382773392.png" class></li>
+</ul>
+<p>经过前面的基础,我们可以比较轻松的来验证这个流程:</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_20550310306975272.png" class>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18892638196928968.png" class>
+
+<p>同样的fishhook也改了<code>0x1003C0000</code>这个地址的内容,新的内容是<code>0x01003b95d0</code>,我们来看下这个地址的汇编:</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_5825779781884246.png" class>
+
+<p>我们再把前面的三张流程图汇总一下:</p>
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_18840636091805885.png" class title="绑定NSLog方法">
+
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_9650566185043585.png" class title="绑定完第一次调用NSLog方法">
+
+<img src="/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/image_02777089198063276.png" class title="fishhook执行完调用NSLog方法">
+
+
+
+]]></content>
+      <tags>
+        <tag>动态链接</tag>
+      </tags>
   </entry>
 </search>
