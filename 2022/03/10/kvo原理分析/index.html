@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="iOS底层原理," />
 
 
 
@@ -79,15 +79,21 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="tags">
-<meta property="og:url" content="https://xuanhui1991.github.io/xuanhui.github.io/tags/index.html">
+<meta name="description" content="什么是KVO苹果官方文档是这么介绍KVO的：  Key-value observing is a mechanism that allows objects to be notified of changes to specified properties of other objects.  意思就是说KVO是一种机制，这种机制允许某一个对象观察其他对象的属性时，假如被观察对象的属性发生变更的时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KVO原理分析">
+<meta property="og:url" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="玄晖">
+<meta property="og:description" content="什么是KVO苹果官方文档是这么介绍KVO的：  Key-value observing is a mechanism that allows objects to be notified of changes to specified properties of other objects.  意思就是说KVO是一种机制，这种机制允许某一个对象观察其他对象的属性时，假如被观察对象的属性发生变更的时">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-01-09T05:18:24.000Z">
-<meta property="article:modified_time" content="2022-01-09T05:18:45.642Z">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646986727694.jpg">
+<meta property="og:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646987760344.jpg">
+<meta property="article:published_time" content="2022-03-10T03:38:02.000Z">
+<meta property="article:modified_time" content="2022-03-11T08:51:16.016Z">
 <meta property="article:author" content="xuanhui1991">
+<meta property="article:tag" content="iOS底层原理">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xuanhui1991.github.io/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646986727694.jpg">
 
 
 
@@ -117,13 +123,13 @@
 
 
 
-  <link rel="canonical" href="https://xuanhui1991.github.io/xuanhui.github.io/tags/"/>
+  <link rel="canonical" href="https://xuanhui1991.github.io/xuanhui.github.io/2022/03/10/kvo原理分析/"/>
 
 
 
 
 
-  <title>tags | 玄晖</title>
+  <title>KVO原理分析 | 玄晖</title>
   
 
 
@@ -272,40 +278,192 @@
 
   <div id="posts" class="posts-expand">
     
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="玄晖">
+    </span>
+
     
-    
-    <div class="post-block page">
       <header class="post-header">
 
-	<h1 class="post-title" itemprop="name headline">tags</h1>
-
-
-
-</header>
-
-      
-      
-      
-      <div class="post-body">
         
         
-          <div class="tag-cloud">
-            <div class="tag-cloud-title">
-                7 tags in total
-            </div>
-            <div class="tag-cloud-tags">
-              <a href="/xuanhui.github.io/tags/flutter/" style="font-size: 12px; color: #ccc">Flutter</a> <a href="/xuanhui.github.io/tags/ios%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/" style="font-size: 12px; color: #ccc">iOS底层原理</a> <a href="/xuanhui.github.io/tags/%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5/" style="font-size: 12px; color: #ccc">代码注入</a> <a href="/xuanhui.github.io/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" style="font-size: 12px; color: #ccc">动态链接</a> <a href="/xuanhui.github.io/tags/%E6%B8%B2%E6%9F%93/" style="font-size: 12px; color: #ccc">渲染</a> <a href="/xuanhui.github.io/tags/%E7%AD%BE%E5%90%8D/" style="font-size: 12px; color: #ccc">签名</a> <a href="/xuanhui.github.io/tags/%E9%80%86%E5%90%91/" style="font-size: 30px; color: #111">逆向</a>
-            </div>
-          </div>
+          <h1 class="post-title" itemprop="name headline">KVO原理分析</h1>
         
-      </div>
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-03-10T11:38:02+08:00">
+                2022-03-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
       
       
+
+      
+        <h3 id="什么是KVO"><a href="#什么是KVO" class="headerlink" title="什么是KVO"></a>什么是KVO</h3><p>苹果官方文档是这么介绍<code>KVO</code>的：</p>
+<blockquote>
+<p>Key-value observing is a mechanism that allows objects to be notified of changes to specified properties of other objects.</p>
+</blockquote>
+<p>意思就是说<code>KVO</code>是一种机制，这种机制允许某一个对象观察其他对象的属性时，假如被观察对象的属性发生变更的时候，观察对象可以收到通知。</p>
+<h3 id="KVO的使用"><a href="#KVO的使用" class="headerlink" title="KVO的使用"></a>KVO的使用</h3><h4 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h4><ol>
+<li> 调用<code>addObserver: forKeyPath: options: context:</code>注册观察者，其中<code>context</code>参数可以用作区分不同的上下文，而不是通过判断<code>keyPath</code>。</li>
+<li>实现<code>KVO</code>的回调方法：<code>observeValueForKeyPath:ofObject:change:context:</code></li>
+<li>调用<code>removeObserver:forKeyPath:</code>移除观察者，当我们不需要观察这个属性变化的时候，可以调用这个方法。需要注意的是，观察者被释放前一定要调用这个方法，否则会导致crash。所以这个方法的调用可以放在<code>dealloc</code>里面。</li>
+</ol>
+<span id="more"></span> 
+
+<p>下面通过代码来演示最简单的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">    </span><br><span class="line">    self.room = [[Room alloc] init];</span><br><span class="line">    self.room.name = @&quot;2&quot;;</span><br><span class="line">    </span><br><span class="line">    [self.room addObserver:self forKeyPath:@&quot;name&quot; options:NSKeyValueObservingOptionNew context:NULL];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event &#123;</span><br><span class="line">    self.room.name = [NSString stringWithFormat:@&quot;%@ 1&quot;, self.room.name];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context &#123;</span><br><span class="line">    NSLog(@&quot;%@&quot;, change);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)dealloc &#123;</span><br><span class="line">    [self.room removeObserver:self forKeyPath:@&quot;name&quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这段代码就可以监听<code>Room</code>对象的<code>name</code>属性了。</p>
+<h4 id="手动触发回调"><a href="#手动触发回调" class="headerlink" title="手动触发回调"></a>手动触发回调</h4><p>在上面的代码中，每一次回调都是自动触发的，但其实我们可以手动触发回调，也就是只有在我们想要触发回调的时候才触发。我们通过代码来演示一下手动触发回调的方式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key &#123;</span><br><span class="line">    if ([key isEqualToString:@&quot;name&quot;]) &#123;</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;</span><br><span class="line">    return [super automaticallyNotifiesObserversForKey:key];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)setName:(NSString *)name &#123;</span><br><span class="line">    [self willChangeValueForKey:@&quot;name&quot;];</span><br><span class="line">    _name = name;</span><br><span class="line">    [self didChangeValueForKey:@&quot;name&quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li> 重写<code>automaticallyNotifiesObserversForKey:</code>方法对于需要手动触发的key返回<code>NO</code>.</li>
+<li> 在对应的<code>Setter</code>方法中调用<code>willChangeValueForKey:</code>方法和<code>didChangeValueForKey:</code>方法。</li>
+</ol>
+<h3 id="KVO的底层实现"><a href="#KVO的底层实现" class="headerlink" title="KVO的底层实现"></a>KVO的底层实现</h3><p>上文介绍了<code>KVO</code>最简单的用法，那么本节我们就来探索一下<code>KVO</code>的底层实现。</p>
+<h4 id="KVO只会对setter方法起作用"><a href="#KVO只会对setter方法起作用" class="headerlink" title="KVO只会对setter方法起作用"></a><code>KVO</code>只会对<code>setter</code>方法起作用</h4><p>既然<code>KVO</code>是观察属性变更的，那么假如我们不调用<code>setter</code>方法，而是直接对成员变量进行赋值，观察者是否会接收到回调。<br>我们把上面的代码改一下，对变量进行直接赋值而非调用属性方法:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event &#123;</span><br><span class="line">  //  self.room.name = [NSString stringWithFormat:@&quot;%@ 1&quot;, self.room.name];</span><br><span class="line">    self.room -&gt; _name = [NSString stringWithFormat:@&quot;%@ 1&quot;, self.room.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果是不会触发回调，这就说明了，只有触发了属性方法才能使<code>KVO</code>起作用。</p>
+<h4 id="isa-swizzling"><a href="#isa-swizzling" class="headerlink" title="isa-swizzling"></a>isa-swizzling</h4><h5 id="官方文档说明"><a href="#官方文档说明" class="headerlink" title="官方文档说明"></a>官方文档说明</h5><p>我们来看一下官方文档对于<code>KVO</code>实现细节的说明：</p>
+<blockquote>
+<p>Automatic key-value observing is implemented using a technique called isa-swizzling.</p>
+</blockquote>
+<blockquote>
+<p>  The isa pointer, as the name suggests, points to the object’s class which maintains a dispatch table. This dispatch table essentially contains pointers to the methods the class implements, among other data.</p>
+</blockquote>
+<blockquote>
+<p> When an observer is registered for an attribute of an object the isa pointer of the observed object is modified, pointing to an intermediate class rather than at the true class. As a result the value of the isa pointer does not necessarily reflect the actual class of the instance.</p>
+</blockquote>
+<blockquote>
+<p>  You should never rely on the isa pointer to determine class membership. Instead, you should use the class method to determine the class of an object instance.</p>
+</blockquote>
+<p>大概的意思是当我们对某一个对象进行观察的时候，这个对象的<code>isa</code>变量就会指向一个中间类，正是因为这个中间类的存在，才使得回调能够触发。</p>
+<h5 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h5><p>我们通过<code>Xcode</code>来验证这一部分：<br>首先我们在注册观察者之前看一下这个对象的类是哪个：</p>
+<img src="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646986727694.jpg" class>
+
+<p>接着在注册观察者之后，我们继续来看对象的类：</p>
+<img src="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646987760344.jpg" class>
+
+<p>我们发现通过<code>runtime</code>的方法<code>object_getClassName</code>获得的类已经发生了变化，说明<code>isa</code>指针的值已经变了，也就验证了文档中所说的<code>isa-swizzling</code>。这里需要注意一点的是，假如这里调用<code>class</code>方法来获取对象所属的类，是不会发生变化的，也就是会一直返回<code>Room</code>类，至于为什么，我们后面再讲。</p>
+<h5 id="中间类"><a href="#中间类" class="headerlink" title="中间类"></a>中间类</h5><p>接下来我们来看看这个中间类：</p>
+<p>首先看一下这个中间类的继承关系，同样通过<code>runtime</code>的API：</p>
+
       
     </div>
     
     
     
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/xuanhui.github.io/tags/ios%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/" rel="tag"># iOS底层原理</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/xuanhui.github.io/2022/02/06/ios%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-2-%E9%87%8D%E7%AD%BE%E5%90%8D%E5%92%8C%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5/" rel="next" title="iOS逆向入门(2)-重签名和代码注入">
+                <i class="fa fa-chevron-left"></i> iOS逆向入门(2)-重签名和代码注入
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
   </div>
 
 
@@ -338,8 +496,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -399,6 +566,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFKVO"><span class="nav-number">1.</span> <span class="nav-text">什么是KVO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KVO%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">KVO的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8"><span class="nav-number">2.1.</span> <span class="nav-text">基本使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%8B%E5%8A%A8%E8%A7%A6%E5%8F%91%E5%9B%9E%E8%B0%83"><span class="nav-number">2.2.</span> <span class="nav-text">手动触发回调</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KVO%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">KVO的底层实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#KVO%E5%8F%AA%E4%BC%9A%E5%AF%B9setter%E6%96%B9%E6%B3%95%E8%B5%B7%E4%BD%9C%E7%94%A8"><span class="nav-number">3.1.</span> <span class="nav-text">KVO只会对setter方法起作用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#isa-swizzling"><span class="nav-number">3.2.</span> <span class="nav-text">isa-swizzling</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3%E8%AF%B4%E6%98%8E"><span class="nav-number">3.2.1.</span> <span class="nav-text">官方文档说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">3.2.2.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%B8%AD%E9%97%B4%E7%B1%BB"><span class="nav-number">3.2.3.</span> <span class="nav-text">中间类</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       

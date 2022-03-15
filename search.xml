@@ -195,8 +195,60 @@
   </entry>
   <entry>
     <title>KVO原理分析</title>
-    <url>/xuanhui.github.io/2022/01/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</url>
-    <content><![CDATA[]]></content>
+    <url>/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[<h3 id="什么是KVO"><a href="#什么是KVO" class="headerlink" title="什么是KVO"></a>什么是KVO</h3><p>苹果官方文档是这么介绍<code>KVO</code>的：</p>
+<blockquote>
+<p>Key-value observing is a mechanism that allows objects to be notified of changes to specified properties of other objects.</p>
+</blockquote>
+<p>意思就是说<code>KVO</code>是一种机制，这种机制允许某一个对象观察其他对象的属性时，假如被观察对象的属性发生变更的时候，观察对象可以收到通知。</p>
+<h3 id="KVO的使用"><a href="#KVO的使用" class="headerlink" title="KVO的使用"></a>KVO的使用</h3><h4 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h4><ol>
+<li> 调用<code>addObserver: forKeyPath: options: context:</code>注册观察者，其中<code>context</code>参数可以用作区分不同的上下文，而不是通过判断<code>keyPath</code>。</li>
+<li>实现<code>KVO</code>的回调方法：<code>observeValueForKeyPath:ofObject:change:context:</code></li>
+<li>调用<code>removeObserver:forKeyPath:</code>移除观察者，当我们不需要观察这个属性变化的时候，可以调用这个方法。需要注意的是，观察者被释放前一定要调用这个方法，否则会导致crash。所以这个方法的调用可以放在<code>dealloc</code>里面。</li>
+</ol>
+<span id="more"></span> 
+
+<p>下面通过代码来演示最简单的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">    </span><br><span class="line">    self.room = [[Room alloc] init];</span><br><span class="line">    self.room.name = @&quot;2&quot;;</span><br><span class="line">    </span><br><span class="line">    [self.room addObserver:self forKeyPath:@&quot;name&quot; options:NSKeyValueObservingOptionNew context:NULL];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event &#123;</span><br><span class="line">    self.room.name = [NSString stringWithFormat:@&quot;%@ 1&quot;, self.room.name];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context &#123;</span><br><span class="line">    NSLog(@&quot;%@&quot;, change);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)dealloc &#123;</span><br><span class="line">    [self.room removeObserver:self forKeyPath:@&quot;name&quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这段代码就可以监听<code>Room</code>对象的<code>name</code>属性了。</p>
+<h4 id="手动触发回调"><a href="#手动触发回调" class="headerlink" title="手动触发回调"></a>手动触发回调</h4><p>在上面的代码中，每一次回调都是自动触发的，但其实我们可以手动触发回调，也就是只有在我们想要触发回调的时候才触发。我们通过代码来演示一下手动触发回调的方式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">+ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key &#123;</span><br><span class="line">    if ([key isEqualToString:@&quot;name&quot;]) &#123;</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;</span><br><span class="line">    return [super automaticallyNotifiesObserversForKey:key];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)setName:(NSString *)name &#123;</span><br><span class="line">    [self willChangeValueForKey:@&quot;name&quot;];</span><br><span class="line">    _name = name;</span><br><span class="line">    [self didChangeValueForKey:@&quot;name&quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li> 重写<code>automaticallyNotifiesObserversForKey:</code>方法对于需要手动触发的key返回<code>NO</code>.</li>
+<li> 在对应的<code>Setter</code>方法中调用<code>willChangeValueForKey:</code>方法和<code>didChangeValueForKey:</code>方法。</li>
+</ol>
+<h3 id="KVO的底层实现"><a href="#KVO的底层实现" class="headerlink" title="KVO的底层实现"></a>KVO的底层实现</h3><p>上文介绍了<code>KVO</code>最简单的用法，那么本节我们就来探索一下<code>KVO</code>的底层实现。</p>
+<h4 id="KVO只会对setter方法起作用"><a href="#KVO只会对setter方法起作用" class="headerlink" title="KVO只会对setter方法起作用"></a><code>KVO</code>只会对<code>setter</code>方法起作用</h4><p>既然<code>KVO</code>是观察属性变更的，那么假如我们不调用<code>setter</code>方法，而是直接对成员变量进行赋值，观察者是否会接收到回调。<br>我们把上面的代码改一下，对变量进行直接赋值而非调用属性方法:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event &#123;</span><br><span class="line">  //  self.room.name = [NSString stringWithFormat:@&quot;%@ 1&quot;, self.room.name];</span><br><span class="line">    self.room -&gt; _name = [NSString stringWithFormat:@&quot;%@ 1&quot;, self.room.name];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果是不会触发回调，这就说明了，只有触发了属性方法才能使<code>KVO</code>起作用。</p>
+<h4 id="isa-swizzling"><a href="#isa-swizzling" class="headerlink" title="isa-swizzling"></a>isa-swizzling</h4><h5 id="官方文档说明"><a href="#官方文档说明" class="headerlink" title="官方文档说明"></a>官方文档说明</h5><p>我们来看一下官方文档对于<code>KVO</code>实现细节的说明：</p>
+<blockquote>
+<p>Automatic key-value observing is implemented using a technique called isa-swizzling.</p>
+</blockquote>
+<blockquote>
+<p>  The isa pointer, as the name suggests, points to the object’s class which maintains a dispatch table. This dispatch table essentially contains pointers to the methods the class implements, among other data.</p>
+</blockquote>
+<blockquote>
+<p> When an observer is registered for an attribute of an object the isa pointer of the observed object is modified, pointing to an intermediate class rather than at the true class. As a result the value of the isa pointer does not necessarily reflect the actual class of the instance.</p>
+</blockquote>
+<blockquote>
+<p>  You should never rely on the isa pointer to determine class membership. Instead, you should use the class method to determine the class of an object instance.</p>
+</blockquote>
+<p>大概的意思是当我们对某一个对象进行观察的时候，这个对象的<code>isa</code>变量就会指向一个中间类，正是因为这个中间类的存在，才使得回调能够触发。</p>
+<h5 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h5><p>我们通过<code>Xcode</code>来验证这一部分：<br>首先我们在注册观察者之前看一下这个对象的类是哪个：</p>
+<img src="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646986727694.jpg" class>
+
+<p>接着在注册观察者之后，我们继续来看对象的类：</p>
+<img src="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646987760344.jpg" class>
+
+<p>我们发现通过<code>runtime</code>的方法<code>object_getClassName</code>获得的类已经发生了变化，说明<code>isa</code>指针的值已经变了，也就验证了文档中所说的<code>isa-swizzling</code>。这里需要注意一点的是，假如这里调用<code>class</code>方法来获取对象所属的类，是不会发生变化的，也就是会一直返回<code>Room</code>类，至于为什么，我们后面再讲。</p>
+<h5 id="中间类"><a href="#中间类" class="headerlink" title="中间类"></a>中间类</h5><p>接下来我们来看看这个中间类：</p>
+<p>首先看一下这个中间类的继承关系，同样通过<code>runtime</code>的API：</p>
+]]></content>
+      <tags>
+        <tag>iOS底层原理</tag>
+      </tags>
   </entry>
   <entry>
     <title>Runtime分析-消息转发机制</title>
@@ -332,6 +384,21 @@
 ]]></content>
       <tags>
         <tag>动态链接</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>iOS逆向入门(2)-重签名和代码注入</title>
+    <url>/xuanhui.github.io/2022/02/06/ios%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-2-%E9%87%8D%E7%AD%BE%E5%90%8D%E5%92%8C%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5/</url>
+    <content><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我们在<a href="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/" title="&lt;&lt;iOS逆向入门-1 &gt;&gt;">&lt;&lt;iOS逆向入门-1 &gt;&gt;</a>中已经获得了一个已经砸过壳的ipa，砸过壳的<code>ipa</code>是不能直接安装在非越狱手机上面的，即使是安装在了越狱手机上，启动也是会闪退的（因为原始的签名是针对加壳过的代码进行签名的，现在壳已经被砸掉了，所以和签名就无法对应上了），关于签名这一块的知识可以阅读另一篇文章<a href="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/" title="&lt;&lt;iOS应用签名原理&gt;&gt;">&lt;&lt;iOS应用签名原理&gt;&gt;</a>。</p>
+<p> 那么我们如何才能把砸过壳的应用安装在手机上面呢，答案是我们需要使用我们自己开发者账号的证书和配置文件对应用进行重签名。</p>
+<h3 id="重签名"><a href="#重签名" class="headerlink" title="重签名"></a>重签名</h3><h4 id="手动重签名"><a href="#手动重签名" class="headerlink" title="手动重签名"></a>手动重签名</h4><p>我们使用<code>Xcode</code>把一个开发的<code>app</code>安装到设备上就一定会使用签名，这个过程中其实是使用了<code>codesign</code>命令，所以我们也可以使用这个命令来进行重签名。下面我们就把之前导出的头条app进行重签名：</p>
+<p>1. </p>
+]]></content>
+      <categories>
+        <category>逆向</category>
+      </categories>
+      <tags>
+        <tag>逆向</tag>
       </tags>
   </entry>
 </search>
