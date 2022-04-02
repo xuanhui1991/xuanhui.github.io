@@ -2,12 +2,12 @@
 <search>
   <entry>
     <title>Block底层分析</title>
-    <url>/xuanhui.github.io/2022/03/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/</url>
+    <url>/xuanhui.github.io/2021/10/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/</url>
     <content><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在<code>OC</code>语言中，<code>Block</code>是经常使用到的，但是我们经常会被问到<code>Block</code>有几种类型这类问题，那么本文就来探索一下<code>Block</code>到底是什么。</p>
 <h3 id="Block的本质"><a href="#Block的本质" class="headerlink" title="Block的本质"></a><code>Block</code>的本质</h3><p>首先我们先写下使用<code>block</code>最简单的一段代码，并打下断点：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void (^block)(void) = ^&#123;</span><br><span class="line">     NSLog(@&quot;123&quot;);</span><br><span class="line"> &#125;;</span><br><span class="line"> </span><br><span class="line"> block();</span><br></pre></td></tr></table></figure>
 <p>然后我们来看一下block变量：</p>
-<img src="/xuanhui.github.io/2022/03/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/1648609123167.jpg" class>
+<img src="/xuanhui.github.io/2021/10/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/1648609123167.jpg" class>
 
 <p>我们可以看到，<code>block</code>变量其实是一个对象，也拥有<code>isa</code>指针，而且在这里<code>isa</code>指针是指向了<code>__NSGlobalBlock__</code>，所以可以把<code>block</code>这个变量当作<code>__NSGlobalBlock__</code>类的对象，正是因为<code>block</code>也是对象，所以我们可以用<code>class</code>方法来获取对象所属的类。</p>
 <span id="more"></span> 
@@ -16,13 +16,13 @@
 <h4 id="栈Block"><a href="#栈Block" class="headerlink" title="栈Block"></a>栈<code>Block</code></h4><p>当我们的<code>Block</code>引用了局部变量（注意函数里面使用<code>self</code>也算局部变量，因为是隐藏参数），并且没有进行强引用或者<code>copy</code>修饰，那么就是<code>栈</code>Block，如下代码：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    int a = 0;</span><br><span class="line">    void (^__weak block)(void) = ^&#123;</span><br><span class="line">        int b = a;</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">    block();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这个时候我们来看<code>block</code>这个变量的<code>isa</code>变量变成了什么：</p>
-<img src="/xuanhui.github.io/2022/03/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/1648632525840.jpg" class>
+<img src="/xuanhui.github.io/2021/10/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/1648632525840.jpg" class>
 
 <p><code>isa</code>指向了<code>__NSStackBlock__</code>这个类，就代表了对象属于栈<code>block</code>，意味着这个对象会像局部变量一样存储在内存布局的栈区。</p>
 <h4 id="堆Block"><a href="#堆Block" class="headerlink" title="堆Block"></a>堆<code>Block</code></h4><p>前面讲了栈<code>Block</code>，那么把没有强引用改成强引用（引用了局部变量，并且进行了强引用或者<code>copy</code>），就是堆Block，如下代码：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int a = 0;</span><br><span class="line">void (^block)(void) = ^&#123;</span><br><span class="line">    int b = a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>这个时候我们再看这个<code>block</code>变量的<code>isa</code>:</p>
-<img src="/xuanhui.github.io/2022/03/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/1648648216113.jpg" class>
+<img src="/xuanhui.github.io/2021/10/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/1648648216113.jpg" class>
 
 <p><code>isa</code>指向了<code>__NSStackBlock__</code>这个类，就代表了对象属于堆<code>block</code>，意味着这个对象会像其他通过<code>alloc</code>方法创建的对象一样存储在内存布局的堆区。</p>
 <p>通过上面可以总结出，假如<code>block</code>变量没有使用外部变量或者使用的是全局变量，那么就是全局<code>block</code>，假如这个<code>block</code>使用了局部变量，并且进行了强引用或者<code>copy</code>，那么就是堆<code>block</code>,如果没有进行强引用或者<code>copy</code>，就是栈<code>block</code>。</p>
@@ -46,39 +46,8 @@
       </tags>
   </entry>
   <entry>
-    <title>AFNetworking源码分析(1)</title>
-    <url>/xuanhui.github.io/2022/01/10/afnetworking%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-1/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>Flutter引擎源码调试</title>
-    <url>/xuanhui.github.io/2022/01/10/flutter%E5%BC%95%E6%93%8E%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>Flutter渲染原理</title>
-    <url>/xuanhui.github.io/2022/01/10/flutter%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>Flutter</category>
-      </categories>
-      <tags>
-        <tag>Flutter</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>GCD深入探究</title>
-    <url>/xuanhui.github.io/2022/01/09/gcd%E6%B7%B1%E5%85%A5%E6%8E%A2%E7%A9%B6/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>HTTPS原理</title>
-    <url>/xuanhui.github.io/2022/01/10/https%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
     <title>iOS逆向(1)-越狱&amp;&amp;砸壳</title>
-    <url>/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/</url>
+    <url>/xuanhui.github.io/2021/12/05/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/</url>
     <content><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文记录了一些逆向过程中的知识点，属于比较入门的知识。更加详细的了解推荐阅读书籍<a href="https://item.jd.com/12800426.html">《iOS应用逆向与安全之道》</a></p>
 <h3 id="越狱"><a href="#越狱" class="headerlink" title="越狱"></a>越狱</h3><h4 id="开始越狱"><a href="#开始越狱" class="headerlink" title="开始越狱"></a>开始越狱</h4><p>越狱是iOS逆向中非常基础的操作，因为未越狱的手机是没有系统的<code>root</code>权限的，所以有很多的限制，而越狱就是利用系统漏洞来获取设备Root权限的一种技术手段。越狱又分为完美越狱和非完美越狱：</p>
 <ul>
@@ -114,7 +83,7 @@
 <li> 通过<code>otool</code>命令进行验证，输入命令:<code>otool -l (machO文件路径) | grep crypt</code>,假如输出的字段中<code>cryptid = 0</code>，就代表是没有加过壳的。</li>
 <li>通过<code>MachOView</code>打开<code>MachO</code>文件，假如在<code>Load Commands</code>下的<code>LC_ENCRYPTION_INFO_64</code>内容中<code>Crypt ID</code>为0，就代表是未加过壳的。</li>
 </ol>
-<img src="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/crypt.png" class> 
+<img src="/xuanhui.github.io/2021/12/05/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/crypt.png" class> 
 
 <p>因为加过壳的应用中<code>Text</code>段的内容并非它的原始内容，所以就会有很多的限制，比如反汇编。所以，我们就需要把这一层加密给去除，这个过程叫做砸壳。</p>
 <h4 id="砸壳"><a href="#砸壳" class="headerlink" title="砸壳"></a>砸壳</h4><p>砸壳的类型分为静态砸壳和动态砸壳：</p>
@@ -146,23 +115,12 @@
       </tags>
   </entry>
   <entry>
-    <title>iOS图像渲染原理</title>
-    <url>/xuanhui.github.io/2022/01/10/ios%E5%9B%BE%E5%83%8F%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>iOS底层</category>
-      </categories>
-      <tags>
-        <tag>渲染</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>iOS应用签名原理</title>
-    <url>/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/</url>
+    <url>/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在iOS开发中,开发者证书一定是我们经常使用到的，那么为什么会存在开发者证书这样的机制，开发者证书机制和应用签名到底有什么关系，应用签名又是什么，本文会逐步讲解这里面的原理。</p>
 <h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>数字签名是电子邮件、宏或电子文档等数字信息上的一种经过加密的电子身份验证戳。 签名用于确认宏或文档来自签名人且未经更改。</p>
 <p>我们用一个图来表示：</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg" class>  
+<img src="/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg" class>  
 
 <span id="more"></span> 
 
@@ -178,7 +136,7 @@
 </ol>
 <h3 id="AppStore应用签名"><a href="#AppStore应用签名" class="headerlink" title="AppStore应用签名"></a>AppStore应用签名</h3><p>我们来看一下AppStore的应用是如何签名的：</p>
 <p>苹果会生成一对<code>RSA</code>加密的公私钥，私钥放在AppStore的服务器上，公钥内置在苹果设备上面，当我们把应用上传到苹果服务器的时候，苹果使用私钥对App进行签名，当用户下载了app的时候会使用内置的公钥进行解密获得<code>hash</code>值，然后将machO或者资源文件重新进行<code>hash</code>比较两个值是否相同来验证应用是否被篡改。</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/AppStore%E7%AD%BE%E5%90%8D.png" class>  
+<img src="/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/AppStore%E7%AD%BE%E5%90%8D.png" class>  
 
 <p>使用这样一对苹果的公/私钥的好处除了可以完成数字签名必要的加/解密之外，还可以确保这个应用一定是经过苹果官方允许的。</p>
 <p>那么这样是否就可以满足所有需求了，答案是否定的.因为假如都是这样的签名方式，那么用户就只能安装AppStore的应用了，那么我们又如何进行真机调试或者企业级应用分发呢。</p>
@@ -190,7 +148,7 @@
 </ol>
 <p>类似于<code>HTTPS</code>的证书，苹果也使用了证书来解决这些问题，也就是我们熟知的开发者证书。</p>
 <p>用一张图来表述：</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png" class>  
+<img src="/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png" class>  
 
 <p>我们了解一下这个流程：</p>
 <ol>
@@ -203,7 +161,7 @@
 <p>因为这个过程中，不仅仅对App进行了签名，也对Mac电脑的公钥进行了签名（即开发者证书），所以我们把它叫做双重签名。</p>
 <h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p>那么上面的签名机制是否完全解决了所有的问题，答案是否定的： 比如我们的真机调试app只能安装在某一些固定的设备上面，那么单靠上面的机制是无法解决的。</p>
 <p>苹果使用配置文件来解决这个问题，也就是我们熟悉的类型是<code>mobileprovision</code>的文件，配置文件里面包含了很多信息，包括证书，可以使用的权限，可以安装的设备id等，所以把上面的图改一下就变成了：</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg" class>  
+<img src="/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg" class>  
 
 <p>所以，当我们进行真机调试的时候，证书并不是单独放在app文件夹中的，而是内嵌在配置文件中的，大家如果有兴趣可以看一下自己电脑上的配置文件，地址在<code>~/Library/MobileDevice/Provisioning Profiles</code>。</p>
 <p>现在我们就解决了前面提到的所有的问题，当然举真机调试只是一个例子，因为企业包也是使用这种机制的，而AppStore包的签名我们上面已经讲过了。</p>
@@ -220,22 +178,8 @@
       </tags>
   </entry>
   <entry>
-    <title>iOS离屏渲染探究</title>
-    <url>/xuanhui.github.io/2022/01/10/ios%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E6%8E%A2%E7%A9%B6/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>iOS逆向-代码注入&amp;&amp;重签名</title>
-    <url>/xuanhui.github.io/2022/01/10/ios%E9%80%86%E5%90%91-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5-%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上一篇我们介绍了</p>
-]]></content>
-      <tags>
-        <tag>代码注入</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>KVO原理分析</title>
-    <url>/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</url>
+    <url>/xuanhui.github.io/2021/09/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</url>
     <content><![CDATA[<h3 id="什么是KVO"><a href="#什么是KVO" class="headerlink" title="什么是KVO"></a>什么是KVO</h3><p>苹果官方文档是这么介绍<code>KVO</code>的：</p>
 <blockquote>
 <p>Key-value observing is a mechanism that allows objects to be notified of changes to specified properties of other objects.</p>
@@ -277,20 +221,20 @@
 </blockquote>
 <p>大概的意思是当我们对某一个对象进行观察的时候，这个对象的<code>isa</code>变量就会指向一个中间类，正是因为这个中间类的存在，才使得回调能够触发。</p>
 <h5 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h5><p>我们通过<code>Xcode</code>来验证这一部分：<br>首先我们在注册观察者之前看一下这个对象的类是哪个：</p>
-<img src="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646986727694.jpg" class>
+<img src="/xuanhui.github.io/2021/09/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646986727694.jpg" class>
 
 <p>接着在注册观察者之后，我们继续来看对象的类：</p>
-<img src="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646987760344.jpg" class>
+<img src="/xuanhui.github.io/2021/09/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1646987760344.jpg" class>
 
 <p>我们发现通过<code>runtime</code>的方法<code>object_getClassName</code>获得的类已经发生了变化，说明<code>isa</code>指针的值已经变了，也就验证了文档中所说的<code>isa-swizzling</code>。这里需要注意一点的是，假如这里调用<code>class</code>方法来获取对象所属的类，是不会发生变化的，也就是会一直返回<code>Room</code>类，至于为什么，我们后面再讲。</p>
 <h5 id="中间类"><a href="#中间类" class="headerlink" title="中间类"></a>中间类</h5><p>接下来我们来看看这个中间类：</p>
 <p>首先看一下这个中间类的继承关系，同样通过<code>runtime</code>的API：</p>
-<img src="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1647244425136.jpg" class>
+<img src="/xuanhui.github.io/2021/09/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1647244425136.jpg" class>
 <p><code>NSKVONotifying_Room</code>就是那个中间类，它的父类是<code>Room</code>。</p>
 <p>我们通过这一段代码来打印这个中间类的方法列表：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> [self printMethods:NSClassFromString(@&quot;NSKVONotifying_Room&quot;)];</span><br><span class="line"></span><br><span class="line">- (void)printMethods:(Class)cls &#123;</span><br><span class="line">    unsigned int count = 0;</span><br><span class="line">    </span><br><span class="line">    Method *methodList = class_copyMethodList(cls, &amp;count);</span><br><span class="line">    for (int i = 0; i &lt; count; i ++) &#123;</span><br><span class="line">        Method method = methodList[i];</span><br><span class="line">        </span><br><span class="line">        SEL sel = method_getName(method);</span><br><span class="line">        IMP imp = class_getMethodImplementation(cls, sel);</span><br><span class="line">        NSLog(@&quot;%@-%p&quot;, NSStringFromSelector(sel), imp);</span><br><span class="line">    &#125;</span><br><span class="line">    free(methodList);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>下面贴一下<code>NSKVONotifying_Room</code>类输出的结果：</p>
-<img src="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1647324426125.jpg" class>
+<img src="/xuanhui.github.io/2021/09/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1647324426125.jpg" class>
 
 <p>从图中我们可以看出中间类实现了<code>setName</code>，<code>class</code>，<code>dealloc</code>, <code>_isKVOA</code>方法。<br>这几个方法都是通过重写的方式实现的。</p>
 <p>我们可以看到，中间类重写了<code>name</code>属性的<code>getter</code>方法。这样我们大概就能清楚的知道，<code>KVO</code>是通过重写中间类的<code>setter</code>方法来和父类的<code>setter</code>方法进行区分以便进行<code>KVO</code>的回调。那么为什么<code>class</code>方法也要重写呢，这是为了在调用中间类对象的<code>class</code>方法时返回父类，以便对于外部代码来说是不存在这个中间类的。比如本例中调用<code>[self.room class]</code>方法依旧是返回<code>Room</code>类而不是<code>NSKVONotifying_Room</code>类。</p>
@@ -304,26 +248,6 @@
       <tags>
         <tag>iOS底层</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>Runtime分析-消息转发机制</title>
-    <url>/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E6%B6%88%E6%81%AF%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>Runtime分析-类和对象的原理</title>
-    <url>/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>锁的原理</title>
-    <url>/xuanhui.github.io/2022/01/10/%E9%94%81%E7%9A%84%E5%8E%9F%E7%90%86/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>音视频开发入门(1)</title>
-    <url>/xuanhui.github.io/2022/01/10/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8-1/</url>
-    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>探索fishhook原理</title>
@@ -439,21 +363,6 @@
 ]]></content>
       <tags>
         <tag>动态链接</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>iOS逆向入门(2)-重签名和代码注入</title>
-    <url>/xuanhui.github.io/2022/02/06/ios%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-2-%E9%87%8D%E7%AD%BE%E5%90%8D%E5%92%8C%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5/</url>
-    <content><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我们在<a href="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/" title="&lt;&lt;iOS逆向入门-1 &gt;&gt;">&lt;&lt;iOS逆向入门-1 &gt;&gt;</a>中已经获得了一个已经砸过壳的ipa，砸过壳的<code>ipa</code>是不能直接安装在非越狱手机上面的，即使是安装在了越狱手机上，启动也是会闪退的（因为原始的签名是针对加壳过的代码进行签名的，现在壳已经被砸掉了，所以和签名就无法对应上了），关于签名这一块的知识可以阅读另一篇文章<a href="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/" title="&lt;&lt;iOS应用签名原理&gt;&gt;">&lt;&lt;iOS应用签名原理&gt;&gt;</a>。</p>
-<p> 那么我们如何才能把砸过壳的应用安装在手机上面呢，答案是我们需要使用我们自己开发者账号的证书和配置文件对应用进行重签名。</p>
-<h3 id="重签名"><a href="#重签名" class="headerlink" title="重签名"></a>重签名</h3><h4 id="手动重签名"><a href="#手动重签名" class="headerlink" title="手动重签名"></a>手动重签名</h4><p>我们使用<code>Xcode</code>把一个开发的<code>app</code>安装到设备上就一定会使用签名，这个过程中其实是使用了<code>codesign</code>命令，所以我们也可以使用这个命令来进行重签名。下面我们就把之前导出的头条app进行重签名：</p>
-<p>1. </p>
-]]></content>
-      <categories>
-        <category>逆向</category>
-      </categories>
-      <tags>
-        <tag>逆向</tag>
       </tags>
   </entry>
 </search>

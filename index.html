@@ -283,724 +283,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/03/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="玄晖">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/xuanhui.github.io/2022/03/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/" itemprop="url">Block底层分析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-03-30T11:38:44+08:00">
-                2022-03-30
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在<code>OC</code>语言中，<code>Block</code>是经常使用到的，但是我们经常会被问到<code>Block</code>有几种类型这类问题，那么本文就来探索一下<code>Block</code>到底是什么。</p>
-<h3 id="Block的本质"><a href="#Block的本质" class="headerlink" title="Block的本质"></a><code>Block</code>的本质</h3><p>首先我们先写下使用<code>block</code>最简单的一段代码，并打下断点：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void (^block)(void) = ^&#123;</span><br><span class="line">     NSLog(@&quot;123&quot;);</span><br><span class="line"> &#125;;</span><br><span class="line"> </span><br><span class="line"> block();</span><br></pre></td></tr></table></figure>
-<p>然后我们来看一下block变量：</p>
-<img src="/xuanhui.github.io/2022/03/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/1648609123167.jpg" class>
-
-<p>我们可以看到，<code>block</code>变量其实是一个对象，也拥有<code>isa</code>指针，而且在这里<code>isa</code>指针是指向了<code>__NSGlobalBlock__</code>，所以可以把<code>block</code>这个变量当作<code>__NSGlobalBlock__</code>类的对象，正是因为<code>block</code>也是对象，所以我们可以用<code>class</code>方法来获取对象所属的类。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/xuanhui.github.io/2022/03/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/#more" rel="contents">
-              Read more &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="玄晖">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" itemprop="url">KVO原理分析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-03-10T11:38:02+08:00">
-                2022-03-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="什么是KVO"><a href="#什么是KVO" class="headerlink" title="什么是KVO"></a>什么是KVO</h3><p>苹果官方文档是这么介绍<code>KVO</code>的：</p>
-<blockquote>
-<p>Key-value observing is a mechanism that allows objects to be notified of changes to specified properties of other objects.</p>
-</blockquote>
-<p>意思就是说<code>KVO</code>是一种机制，这种机制允许某一个对象观察其他对象的属性时，假如被观察对象的属性发生变更的时候，观察对象可以收到通知。</p>
-<h3 id="KVO的使用"><a href="#KVO的使用" class="headerlink" title="KVO的使用"></a>KVO的使用</h3><h4 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h4><ol>
-<li> 调用<code>addObserver: forKeyPath: options: context:</code>注册观察者，其中<code>context</code>参数可以用作区分不同的上下文，而不是通过判断<code>keyPath</code>。</li>
-<li>实现<code>KVO</code>的回调方法：<code>observeValueForKeyPath:ofObject:change:context:</code></li>
-<li>调用<code>removeObserver:forKeyPath:</code>移除观察者，当我们不需要观察这个属性变化的时候，可以调用这个方法。需要注意的是，观察者被释放前一定要调用这个方法，否则会导致crash。所以这个方法的调用可以放在<code>dealloc</code>里面。</li>
-</ol>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/xuanhui.github.io/2022/03/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/#more" rel="contents">
-              Read more &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/02/06/ios%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-2-%E9%87%8D%E7%AD%BE%E5%90%8D%E5%92%8C%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="玄晖">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/xuanhui.github.io/2022/02/06/ios%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-2-%E9%87%8D%E7%AD%BE%E5%90%8D%E5%92%8C%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5/" itemprop="url">iOS逆向入门(2)-重签名和代码注入</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-02-06T15:22:42+08:00">
-                2022-02-06
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/xuanhui.github.io/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
-                    <span itemprop="name">逆向</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我们在<a href="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/" title="&lt;&lt;iOS逆向入门-1 &gt;&gt;">&lt;&lt;iOS逆向入门-1 &gt;&gt;</a>中已经获得了一个已经砸过壳的ipa，砸过壳的<code>ipa</code>是不能直接安装在非越狱手机上面的，即使是安装在了越狱手机上，启动也是会闪退的（因为原始的签名是针对加壳过的代码进行签名的，现在壳已经被砸掉了，所以和签名就无法对应上了），关于签名这一块的知识可以阅读另一篇文章<a href="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/" title="&lt;&lt;iOS应用签名原理&gt;&gt;">&lt;&lt;iOS应用签名原理&gt;&gt;</a>。</p>
-<p> 那么我们如何才能把砸过壳的应用安装在手机上面呢，答案是我们需要使用我们自己开发者账号的证书和配置文件对应用进行重签名。</p>
-<h3 id="重签名"><a href="#重签名" class="headerlink" title="重签名"></a>重签名</h3><h4 id="手动重签名"><a href="#手动重签名" class="headerlink" title="手动重签名"></a>手动重签名</h4><p>我们使用<code>Xcode</code>把一个开发的<code>app</code>安装到设备上就一定会使用签名，这个过程中其实是使用了<code>codesign</code>命令，所以我们也可以使用这个命令来进行重签名。下面我们就把之前导出的头条app进行重签名：</p>
-<p>1. </p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="玄晖">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/" itemprop="url">iOS逆向(1)-越狱&&砸壳</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-29T16:44:11+08:00">
-                2022-01-29
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/xuanhui.github.io/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
-                    <span itemprop="name">逆向</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文记录了一些逆向过程中的知识点，属于比较入门的知识。更加详细的了解推荐阅读书籍<a target="_blank" rel="noopener" href="https://item.jd.com/12800426.html">《iOS应用逆向与安全之道》</a></p>
-<h3 id="越狱"><a href="#越狱" class="headerlink" title="越狱"></a>越狱</h3><h4 id="开始越狱"><a href="#开始越狱" class="headerlink" title="开始越狱"></a>开始越狱</h4><p>越狱是iOS逆向中非常基础的操作，因为未越狱的手机是没有系统的<code>root</code>权限的，所以有很多的限制，而越狱就是利用系统漏洞来获取设备Root权限的一种技术手段。越狱又分为完美越狱和非完美越狱：</p>
-<ul>
-<li>完美越狱是指指设备在重启后依然能保持越狱状态。</li>
-<li>非完美越狱是指重启后将失去越狱状态，需要重新进行越狱。</li>
-</ul>
-<p>因为苹果的保护越来越强，目前在iOS iOS 9.1以上的手机无法进行完美越狱。</p>
-<p>笔者越狱使用的手机是iPhone7, 系统是iOS 13.4,  使用的越狱工具是<code>checkra1n</code>，大家可以在<a target="_blank" rel="noopener" href="https://checkra.in/">https://checkra.in/</a> 这个网址下载工具进行越狱，具体的越狱步骤就不写了。</p>
-<h4 id="安装必备工具"><a href="#安装必备工具" class="headerlink" title="安装必备工具"></a>安装必备工具</h4><p>越狱之后我们需要在Cydia里面安装一些必要的工具,你可以把Cydia理解为越狱环境的app store,下面我列一下我安装的一些工具:</p>
-<ol>
-<li>Apple File Conduit”2”:  简称”AFC2”, 用于激活助手类工具对iOS设备所有路径的访问权限</li>
-<li> adv-cmds:  只有安装了这个命令,才能在手机上执行ps命令,  用于查看当前运行进程的PID. </li>
-<li> AppSync Unified: 用来绕过系统对应用的签名验证，可以随意安装和运行脱壳后的ipa.</li>
-<li>Filza File Manager: 用来浏览手机文件、修改文件的权限等.</li>
-<li>NewTerm 2: 一款能运行在手机上的终端工具，可以执行各种命令、下载文件、编辑文件等.</li>
-</ol>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/#more" rel="contents">
-              Read more &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/xuanhui.github.io/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="玄晖">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/" itemprop="url">iOS应用签名原理</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-13T10:55:11+08:00">
-                2022-01-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/xuanhui.github.io/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
-                    <span itemprop="name">逆向</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在iOS开发中,开发者证书一定是我们经常使用到的，那么为什么会存在开发者证书这样的机制，开发者证书机制和应用签名到底有什么关系，应用签名又是什么，本文会逐步讲解这里面的原理。</p>
-<h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>数字签名是电子邮件、宏或电子文档等数字信息上的一种经过加密的电子身份验证戳。 签名用于确认宏或文档来自签名人且未经更改。</p>
-<p>我们用一个图来表示：</p>
-<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg" class>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/#more" rel="contents">
-              Read more &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/12/fishhook%E5%8E%9F%E7%90%86%E6%8E%A2%E7%B4%A2-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1131,7 +413,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/10/https%E5%8E%9F%E7%90%86/">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2021/12/05/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -1150,7 +432,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/xuanhui.github.io/2022/01/10/https%E5%8E%9F%E7%90%86/" itemprop="url">HTTPS原理</a></h1>
+                <a class="post-title-link" href="/xuanhui.github.io/2021/12/05/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/" itemprop="url">iOS逆向(1)-越狱&&砸壳</a></h1>
         
 
         <div class="post-meta">
@@ -1162,8 +444,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-10T15:53:41+08:00">
-                2022-01-10
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-12-05T20:20:11+08:00">
+                2021-12-05
               </time>
             
 
@@ -1172,6 +454,28 @@
             
           </span>
 
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/xuanhui.github.io/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
+                    <span itemprop="name">逆向</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -1201,9 +505,29 @@
 
       
         
-          
-            
-          
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文记录了一些逆向过程中的知识点，属于比较入门的知识。更加详细的了解推荐阅读书籍<a target="_blank" rel="noopener" href="https://item.jd.com/12800426.html">《iOS应用逆向与安全之道》</a></p>
+<h3 id="越狱"><a href="#越狱" class="headerlink" title="越狱"></a>越狱</h3><h4 id="开始越狱"><a href="#开始越狱" class="headerlink" title="开始越狱"></a>开始越狱</h4><p>越狱是iOS逆向中非常基础的操作，因为未越狱的手机是没有系统的<code>root</code>权限的，所以有很多的限制，而越狱就是利用系统漏洞来获取设备Root权限的一种技术手段。越狱又分为完美越狱和非完美越狱：</p>
+<ul>
+<li>完美越狱是指指设备在重启后依然能保持越狱状态。</li>
+<li>非完美越狱是指重启后将失去越狱状态，需要重新进行越狱。</li>
+</ul>
+<p>因为苹果的保护越来越强，目前在iOS iOS 9.1以上的手机无法进行完美越狱。</p>
+<p>笔者越狱使用的手机是iPhone7, 系统是iOS 13.4,  使用的越狱工具是<code>checkra1n</code>，大家可以在<a target="_blank" rel="noopener" href="https://checkra.in/">https://checkra.in/</a> 这个网址下载工具进行越狱，具体的越狱步骤就不写了。</p>
+<h4 id="安装必备工具"><a href="#安装必备工具" class="headerlink" title="安装必备工具"></a>安装必备工具</h4><p>越狱之后我们需要在Cydia里面安装一些必要的工具,你可以把Cydia理解为越狱环境的app store,下面我列一下我安装的一些工具:</p>
+<ol>
+<li>Apple File Conduit”2”:  简称”AFC2”, 用于激活助手类工具对iOS设备所有路径的访问权限</li>
+<li> adv-cmds:  只有安装了这个命令,才能在手机上执行ps命令,  用于查看当前运行进程的PID. </li>
+<li> AppSync Unified: 用来绕过系统对应用的签名验证，可以随意安装和运行脱壳后的ipa.</li>
+<li>Filza File Manager: 用来浏览手机文件、修改文件的权限等.</li>
+<li>NewTerm 2: 一款能运行在手机上的终端工具，可以执行各种命令、下载文件、编辑文件等.</li>
+</ol>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/xuanhui.github.io/2021/12/05/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/#more" rel="contents">
+              Read more &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1250,7 +574,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E6%B6%88%E6%81%AF%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6/">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2021/10/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -1269,7 +593,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E6%B6%88%E6%81%AF%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6/" itemprop="url">Runtime分析-消息转发机制</a></h1>
+                <a class="post-title-link" href="/xuanhui.github.io/2021/10/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/" itemprop="url">Block底层分析</a></h1>
         
 
         <div class="post-meta">
@@ -1281,8 +605,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-10T11:58:39+08:00">
-                2022-01-10
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-10-30T11:38:44+08:00">
+                2021-10-30
               </time>
             
 
@@ -1320,9 +644,20 @@
 
       
         
-          
-            
-          
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在<code>OC</code>语言中，<code>Block</code>是经常使用到的，但是我们经常会被问到<code>Block</code>有几种类型这类问题，那么本文就来探索一下<code>Block</code>到底是什么。</p>
+<h3 id="Block的本质"><a href="#Block的本质" class="headerlink" title="Block的本质"></a><code>Block</code>的本质</h3><p>首先我们先写下使用<code>block</code>最简单的一段代码，并打下断点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void (^block)(void) = ^&#123;</span><br><span class="line">     NSLog(@&quot;123&quot;);</span><br><span class="line"> &#125;;</span><br><span class="line"> </span><br><span class="line"> block();</span><br></pre></td></tr></table></figure>
+<p>然后我们来看一下block变量：</p>
+<img src="/xuanhui.github.io/2021/10/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/1648609123167.jpg" class>
+
+<p>我们可以看到，<code>block</code>变量其实是一个对象，也拥有<code>isa</code>指针，而且在这里<code>isa</code>指针是指向了<code>__NSGlobalBlock__</code>，所以可以把<code>block</code>这个变量当作<code>__NSGlobalBlock__</code>类的对象，正是因为<code>block</code>也是对象，所以我们可以用<code>class</code>方法来获取对象所属的类。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/xuanhui.github.io/2021/10/30/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/#more" rel="contents">
+              Read more &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1369,7 +704,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%8E%9F%E7%90%86/">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2021/09/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -1388,7 +723,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%8E%9F%E7%90%86/" itemprop="url">Runtime分析-类和对象的原理</a></h1>
+                <a class="post-title-link" href="/xuanhui.github.io/2021/09/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" itemprop="url">KVO原理分析</a></h1>
         
 
         <div class="post-meta">
@@ -1400,8 +735,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-10T11:58:24+08:00">
-                2022-01-10
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-09-10T20:38:02+08:00">
+                2021-09-10
               </time>
             
 
@@ -1439,9 +774,23 @@
 
       
         
-          
-            
-          
+          <h3 id="什么是KVO"><a href="#什么是KVO" class="headerlink" title="什么是KVO"></a>什么是KVO</h3><p>苹果官方文档是这么介绍<code>KVO</code>的：</p>
+<blockquote>
+<p>Key-value observing is a mechanism that allows objects to be notified of changes to specified properties of other objects.</p>
+</blockquote>
+<p>意思就是说<code>KVO</code>是一种机制，这种机制允许某一个对象观察其他对象的属性时，假如被观察对象的属性发生变更的时候，观察对象可以收到通知。</p>
+<h3 id="KVO的使用"><a href="#KVO的使用" class="headerlink" title="KVO的使用"></a>KVO的使用</h3><h4 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h4><ol>
+<li> 调用<code>addObserver: forKeyPath: options: context:</code>注册观察者，其中<code>context</code>参数可以用作区分不同的上下文，而不是通过判断<code>keyPath</code>。</li>
+<li>实现<code>KVO</code>的回调方法：<code>observeValueForKeyPath:ofObject:change:context:</code></li>
+<li>调用<code>removeObserver:forKeyPath:</code>移除观察者，当我们不需要观察这个属性变化的时候，可以调用这个方法。需要注意的是，观察者被释放前一定要调用这个方法，否则会导致crash。所以这个方法的调用可以放在<code>dealloc</code>里面。</li>
+</ol>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/xuanhui.github.io/2021/09/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/#more" rel="contents">
+              Read more &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1488,7 +837,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2022/01/10/ios%E9%80%86%E5%90%91-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5-%E9%87%8D%E7%AD%BE%E5%90%8D/">
+    <link itemprop="mainEntityOfPage" href="https://xuanhui1991.github.io/xuanhui.github.io/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -1507,7 +856,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/xuanhui.github.io/2022/01/10/ios%E9%80%86%E5%90%91-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5-%E9%87%8D%E7%AD%BE%E5%90%8D/" itemprop="url">iOS逆向-代码注入&&重签名</a></h1>
+                <a class="post-title-link" href="/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/" itemprop="url">iOS应用签名原理</a></h1>
         
 
         <div class="post-meta">
@@ -1519,8 +868,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-01-10T11:50:29+08:00">
-                2022-01-10
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-13T21:55:11+08:00">
+                2021-01-13
               </time>
             
 
@@ -1529,6 +878,28 @@
             
           </span>
 
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/xuanhui.github.io/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
+                    <span itemprop="name">逆向</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -1558,10 +929,17 @@
 
       
         
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上一篇我们介绍了</p>
-
-          
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在iOS开发中,开发者证书一定是我们经常使用到的，那么为什么会存在开发者证书这样的机制，开发者证书机制和应用签名到底有什么关系，应用签名又是什么，本文会逐步讲解这里面的原理。</p>
+<h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>数字签名是电子邮件、宏或电子文档等数字信息上的一种经过加密的电子身份验证戳。 签名用于确认宏或文档来自签名人且未经更改。</p>
+<p>我们用一个图来表示：</p>
+<img src="/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg" class>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/xuanhui.github.io/2021/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/#more" rel="contents">
+              Read more &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1598,10 +976,6 @@
   </section>
 
   
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/xuanhui.github.io/page/2/">2</a><a class="extend next" rel="next" href="/xuanhui.github.io/page/2/">&gt;</a>
-  </nav>
-
 
 
           </div>
@@ -1645,7 +1019,7 @@
               
                 <a href="/xuanhui.github.io/archives">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1656,7 +1030,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/xuanhui.github.io/categories/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">1</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -1667,7 +1041,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/xuanhui.github.io/tags/index.html">
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
