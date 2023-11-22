@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>AFNetworking源码分析(1)</title>
+    <url>/xuanhui.github.io/2022/01/10/afnetworking%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-1/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Block底层分析</title>
+    <url>/xuanhui.github.io/2022/01/10/block%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Flutter引擎源码调试</title>
+    <url>/xuanhui.github.io/2022/01/10/flutter%E5%BC%95%E6%93%8E%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Flutter渲染原理</title>
+    <url>/xuanhui.github.io/2022/01/10/flutter%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>Flutter</category>
+      </categories>
+      <tags>
+        <tag>Flutter</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>GCD深入探究</title>
+    <url>/xuanhui.github.io/2022/01/09/gcd%E6%B7%B1%E5%85%A5%E6%8E%A2%E7%A9%B6/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>HTTPS原理</title>
+    <url>/xuanhui.github.io/2022/01/10/https%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>iOS逆向(1)-越狱&amp;&amp;砸壳</title>
+    <url>/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/</url>
+    <content><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文记录了一些逆向过程中的知识点，属于比较入门的知识。更加详细的了解推荐阅读书籍<a href="https://item.jd.com/12800426.html">《iOS应用逆向与安全之道》</a></p>
+<h3 id="越狱"><a href="#越狱" class="headerlink" title="越狱"></a>越狱</h3><h4 id="开始越狱"><a href="#开始越狱" class="headerlink" title="开始越狱"></a>开始越狱</h4><p>越狱是iOS逆向中非常基础的操作，因为未越狱的手机是没有系统的<code>root</code>权限的，所以有很多的限制，而越狱就是利用系统漏洞来获取设备Root权限的一种技术手段。越狱又分为完美越狱和非完美越狱：</p>
+<ul>
+<li>完美越狱是指指设备在重启后依然能保持越狱状态。</li>
+<li>非完美越狱是指重启后将失去越狱状态，需要重新进行越狱。</li>
+</ul>
+<p>因为苹果的保护越来越强，目前在iOS iOS 9.1以上的手机无法进行完美越狱。</p>
+<p>笔者越狱使用的手机是iPhone7, 系统是iOS 13.4,  使用的越狱工具是<code>checkra1n</code>，大家可以在<a href="https://checkra.in/">https://checkra.in/</a> 这个网址下载工具进行越狱，具体的越狱步骤就不写了。</p>
+<h4 id="安装必备工具"><a href="#安装必备工具" class="headerlink" title="安装必备工具"></a>安装必备工具</h4><p>越狱之后我们需要在Cydia里面安装一些必要的工具,你可以把Cydia理解为越狱环境的app store,下面我列一下我安装的一些工具:</p>
+<ol>
+<li>Apple File Conduit”2”:  简称”AFC2”, 用于激活助手类工具对iOS设备所有路径的访问权限</li>
+<li> adv-cmds:  只有安装了这个命令,才能在手机上执行ps命令,  用于查看当前运行进程的PID. </li>
+<li> AppSync Unified: 用来绕过系统对应用的签名验证，可以随意安装和运行脱壳后的ipa.</li>
+<li>Filza File Manager: 用来浏览手机文件、修改文件的权限等.</li>
+<li>NewTerm 2: 一款能运行在手机上的终端工具，可以执行各种命令、下载文件、编辑文件等.</li>
+</ol>
+<span id="more"></span> 
+
+<h4 id="连接越狱手机"><a href="#连接越狱手机" class="headerlink" title="连接越狱手机"></a>连接越狱手机</h4><p>越狱手机的连接可以通过wifi和usb进行连接，使用wifi连接的话可能会比较卡，所以我们这里使用usb进行连接。</p>
+<p>通过usb连接手机的步骤如下：</p>
+<ol>
+<li><p>安装usbmuxd，命令行中输入: <code>brew install usbmuxd</code></p>
+</li>
+<li><p>安装完之后就可以进行端口映射了，ssh的默认端口22,所以需要把本机的2222端口映射到手机的22端口,使用命令：<code>iproxy 2222 22</code></p>
+</li>
+<li><p>进行端口映射后,就可以连接到设备了:<code>ssh -p 2222 root@127.0.0.1</code>,默认密码是<code>alpine</code></p>
+</li>
+</ol>
+<p>这样我们就可以在电脑上面通过命令行对越狱手机进行操作了。</p>
+<h3 id="加壳和砸壳"><a href="#加壳和砸壳" class="headerlink" title="加壳和砸壳"></a>加壳和砸壳</h3><h4 id="AppStore加密机制"><a href="#AppStore加密机制" class="headerlink" title="AppStore加密机制"></a><code>AppStore</code>加密机制</h4><p>当我们把<code>ipa</code>包上传到苹果服务器后，苹果会对<code>ipa</code>包进行加密处理，称为加壳（其实只会对<code>MachO</code>的<code>Text</code>段进行加密，不会对其他数据加密），所以我们从<code>AppStore</code>下载的包都是加过壳的。</p>
+<p>有两种方式可以判断我们拿到的<code>ipa</code>包有没有加过壳：</p>
+<ol>
+<li> 通过<code>otool</code>命令进行验证，输入命令:<code>otool -l (machO文件路径) | grep crypt</code>,假如输出的字段中<code>cryptid = 0</code>，就代表是没有加过壳的。</li>
+<li>通过<code>MachOView</code>打开<code>MachO</code>文件，假如在<code>Load Commands</code>下的<code>LC_ENCRYPTION_INFO_64</code>内容中<code>Crypt ID</code>为0，就代表是未加过壳的。</li>
+</ol>
+<img src="/xuanhui.github.io/2022/01/29/iOS%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8-1/crypt.png" class> 
+
+<p>因为加过壳的应用中<code>Text</code>段的内容并非它的原始内容，所以就会有很多的限制，比如反汇编。所以，我们就需要把这一层加密给去除，这个过程叫做砸壳。</p>
+<h4 id="砸壳"><a href="#砸壳" class="headerlink" title="砸壳"></a>砸壳</h4><p>砸壳的类型分为静态砸壳和动态砸壳：</p>
+<ul>
+<li>静态砸壳：在已经掌握和了解到了壳应用的加密算法和逻辑后，在不运行壳应用程序的前提下，将壳应用程序进行解密处理。静态脱壳的方法难度大，而且加密方发现应用被破解后，就可能会改用更加高级和复杂的加密技术。</li>
+<li>动态砸壳：从运行在进程内存空间中的可执行程序映像（image）入手，将内存中的内容进行转储（dump）处理来实现脱壳处理。这种方法实现起来相对简单，且不必关心使用的是何种加密技术。</li>
+</ul>
+<p>动态砸壳的方法也有很多，常见的工具有：</p>
+<ul>
+<li><code>Clutch</code></li>
+<li><code>dumpdecrypted</code></li>
+<li><code>bfinject</code></li>
+<li><code>CrackerXI</code></li>
+<li><code>Frida-ios-dump</code></li>
+</ul>
+<p>下面我们通过使用<code>Frida-ios-dump</code>来演示动态砸壳，其他的砸壳方式也是大同小异：</p>
+<ul>
+<li>首先我们需要在电脑上面下载<code>frida-ios-dump</code></li>
+<li>然后使用usb连接上一台越狱手机</li>
+<li> 进入<code>Frida-ios-dump</code>文件夹，输入<code>dump.py -l</code>查看已经安装的应用</li>
+<li>找到需要砸壳的应用，输入命令<code>dump.py 应用名 -o 输出ipa的路径</code>，比如<code>dump.py 今日头条 -o ./toutiao.ipa</code>,这样就完成砸壳了。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>逆向</category>
+      </categories>
+      <tags>
+        <tag>逆向</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>iOS图像渲染原理</title>
+    <url>/xuanhui.github.io/2022/01/10/ios%E5%9B%BE%E5%83%8F%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>iOS底层</category>
+      </categories>
+      <tags>
+        <tag>渲染</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>iOS应用签名原理</title>
+    <url>/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在iOS开发中,开发者证书一定是我们经常使用到的，那么为什么会存在开发者证书这样的机制，开发者证书机制和应用签名到底有什么关系，应用签名又是什么，本文会逐步讲解这里面的原理。</p>
+<h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>数字签名是电子邮件、宏或电子文档等数字信息上的一种经过加密的电子身份验证戳。 签名用于确认宏或文档来自签名人且未经更改。</p>
+<p>我们用一个图来表示：</p>
+<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D.jpg" class>  
+
+<span id="more"></span> 
+
+<p>这是最简单的数字签名：</p>
+<p>在传输之前对信息内容进行hash(比如MD5)，得到hash值并进行加密得到数字签名，然后将信息内容和数字签名打包在一起进行传输。</p>
+<p>接收方接收到信息之后，将信息内容同样进行hash得到hash值1，然后将数字签名进行解密得到hash值2，比较hash值1和hash值2就能比较传输过程中信息内容是否有篡改。</p>
+<p>所以，数字签名最重要的作用就是校验信息内容是否有篡改。</p>
+<h2 id="iOS应用签名"><a href="#iOS应用签名" class="headerlink" title="iOS应用签名"></a>iOS应用签名</h2><p>上文中我们简单的讲解了最简单的数字签名，那么落到我们的app应用中，我们也需要进行签名，因为当我们运行应用的时候也需要保证我们的应用内容是没有经过篡改的。</p>
+<p>iOS的签名有两部分：</p>
+<ol>
+<li> 一部分是在MachO文件的<code>Code  Signature</code>段，是对MachO文件的签名。</li>
+<li>另一部分是在<code>.app</code>文件夹中的<code>_CodeSignature</code>文件夹，是对app资源文件的签名。</li>
+</ol>
+<h3 id="AppStore应用签名"><a href="#AppStore应用签名" class="headerlink" title="AppStore应用签名"></a>AppStore应用签名</h3><p>我们来看一下AppStore的应用是如何签名的：</p>
+<p>苹果会生成一对<code>RSA</code>加密的公私钥，私钥放在AppStore的服务器上，公钥内置在苹果设备上面，当我们把应用上传到苹果服务器的时候，苹果使用私钥对App进行签名，当用户下载了app的时候会使用内置的公钥进行解密获得<code>hash</code>值，然后将machO或者资源文件重新进行<code>hash</code>比较两个值是否相同来验证应用是否被篡改。</p>
+<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/AppStore%E7%AD%BE%E5%90%8D.png" class>  
+
+<p>使用这样一对苹果的公/私钥的好处除了可以完成数字签名必要的加/解密之外，还可以确保这个应用一定是经过苹果官方允许的。</p>
+<p>那么这样是否就可以满足所有需求了，答案是否定的.因为假如都是这样的签名方式，那么用户就只能安装AppStore的应用了，那么我们又如何进行真机调试或者企业级应用分发呢。</p>
+<h3 id="双重签名机制"><a href="#双重签名机制" class="headerlink" title="双重签名机制"></a>双重签名机制</h3><p>假如我们要进行真机调试，那么上面的签名机制已经不能满足我们的需求了，因为我们不会把需要真机调试的包上传到苹果服务器，那么苹果的真机调试又是怎么做的呢？</p>
+<p>这个签名需要满足两个条件：</p>
+<ol>
+<li> 它依然是要经过苹果允许的，防止任何随意的app都可以安装在iOS设备上面。</li>
+<li>进行签名的公私钥已经不能使用苹果生成的公私钥了，因为真机调试的时候不会把包上传到苹果服务器进行签名。</li>
+</ol>
+<p>类似于<code>HTTPS</code>的证书，苹果也使用了证书来解决这些问题，也就是我们熟知的开发者证书。</p>
+<p>用一张图来表述：</p>
+<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E8%AF%81%E4%B9%A6%E6%9C%BA%E5%88%B6.png" class>  
+
+<p>我们了解一下这个流程：</p>
+<ol>
+<li>Mac电脑生成一对公/私钥，称为公钥A和私钥A，并生成一个CSR文件(内含公钥A)。</li>
+<li>苹果服务器也有一对 公/私钥，其中公钥已经内置到iOS设备中，我们称为公钥B和私钥B，<code>CSR</code>文件上传到苹果服务器后，苹果将公钥A进行数字签名(使用私钥B)生成证书，Mac电脑下载这个证书。</li>
+<li>在编译的时候， Xcode使用私钥A对app进行签名，并把证书一起打在app包里面传给设备。</li>
+<li>设备接收到app包后，先用公钥B验证证书的签名。</li>
+<li>上一步签名验证没有问题的话,就从证书中取出公钥A，对app的数字签名进行验证。</li>
+</ol>
+<p>因为这个过程中，不仅仅对App进行了签名，也对Mac电脑的公钥进行了签名（即开发者证书），所以我们把它叫做双重签名。</p>
+<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p>那么上面的签名机制是否完全解决了所有的问题，答案是否定的： 比如我们的真机调试app只能安装在某一些固定的设备上面，那么单靠上面的机制是无法解决的。</p>
+<p>苹果使用配置文件来解决这个问题，也就是我们熟悉的类型是<code>mobileprovision</code>的文件，配置文件里面包含了很多信息，包括证书，可以使用的权限，可以安装的设备id等，所以把上面的图改一下就变成了：</p>
+<img src="/xuanhui.github.io/2022/01/13/ios%E5%BA%94%E7%94%A8%E7%AD%BE%E5%90%8D%E5%8E%9F%E7%90%86/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.jpg" class>  
+
+<p>所以，当我们进行真机调试的时候，证书并不是单独放在app文件夹中的，而是内嵌在配置文件中的，大家如果有兴趣可以看一下自己电脑上的配置文件，地址在<code>~/Library/MobileDevice/Provisioning Profiles</code>。</p>
+<p>现在我们就解决了前面提到的所有的问题，当然举真机调试只是一个例子，因为企业包也是使用这种机制的，而AppStore包的签名我们上面已经讲过了。</p>
+<p>这样我们就理清楚了iOS的签名机制了。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ol>
+<li><a href="http://blog.cnbang.net/tech/3386/"> iOS App 签名的原理</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>逆向</category>
+      </categories>
+      <tags>
+        <tag>签名</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>iOS离屏渲染探究</title>
+    <url>/xuanhui.github.io/2022/01/10/ios%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E6%8E%A2%E7%A9%B6/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>iOS逆向-代码注入&amp;&amp;重签名</title>
+    <url>/xuanhui.github.io/2022/01/10/ios%E9%80%86%E5%90%91-%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5-%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上一篇我们介绍了</p>
+]]></content>
+      <tags>
+        <tag>代码注入</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>KVO原理分析</title>
+    <url>/xuanhui.github.io/2022/01/10/kvo%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Runtime分析-消息转发机制</title>
+    <url>/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E6%B6%88%E6%81%AF%E8%BD%AC%E5%8F%91%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Runtime分析-类和对象的原理</title>
+    <url>/xuanhui.github.io/2022/01/10/runtime%E5%88%86%E6%9E%90-%E7%B1%BB%E5%92%8C%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>锁的原理</title>
+    <url>/xuanhui.github.io/2022/01/10/%E9%94%81%E7%9A%84%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>音视频开发入门(1)</title>
+    <url>/xuanhui.github.io/2022/01/10/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8-1/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+</search>
